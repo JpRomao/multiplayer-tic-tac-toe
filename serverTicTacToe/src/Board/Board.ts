@@ -7,6 +7,7 @@ class Board implements IBoard {
   constructor() {
     this.board = Array(9).fill(null);
     this.isFull = false;
+    this.board[0] = 0;
   }
 
   isPositionAvailable(position: BoardAvailablePositions): boolean {
@@ -22,6 +23,7 @@ class Board implements IBoard {
   }
 
   setBoardPosition(position: BoardAvailablePositions, value: 0 | 1): void {
+    console.log("boardposition", position);
     this.board[position] = value;
   }
 

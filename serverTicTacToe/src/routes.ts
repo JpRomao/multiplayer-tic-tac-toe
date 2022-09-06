@@ -6,6 +6,7 @@ import Player from "./Player/Player";
 const routes = Router();
 
 routes.get("/rooms", (request, response) => {
+  console.log(game.rooms);
   try {
     return response.json(game.rooms);
   } catch (error) {
@@ -22,24 +23,40 @@ routes.post("/rooms/:roomId/join", (request, response) => {
     const { roomId } = request.params;
     const { player } = request.body;
 
+    console.log("player > ", player);
+
+    if (!roomId) {
+      console.error("no room id");
+
+      return response
+        .status(400)
+        .json({ error: "RoomId not passed correctly." });
+    }
+
     const room = game.findRoomByRoomId(roomId);
 
-    if (!room) {
+    if (!room || !room.id) {
       return response.status(404).json({ error: "Room not found." });
     }
 
-    if (room?.isRunning) {
-      return response.status(400).json({ message: "Room is running." });
-    }
-
-    const { player: returnedPlayer, room: roomReturned } = game.joinRoom(
+    const verifyPlayerAlreadyAtRoom = game.verifyPlayerAlreadyAtRoom(
       roomId,
       player
     );
 
+    if (verifyPlayerAlreadyAtRoom) {
+      return response.status(200).json(verifyPlayerAlreadyAtRoom);
+    }
+
+    const joinedRoom = game.joinRoom(roomId, player);
+
+    if (!joinedRoom || !joinedRoom.room) {
+      return response.status(400).json({ message: "Room is full." });
+    }
+
     return response
-      .status(200)
-      .json({ player: returnedPlayer, room: roomReturned });
+      .status(201)
+      .json({ room: joinedRoom.room, player: joinedRoom.player });
   } catch (error) {
     console.error(error);
 
@@ -51,11 +68,13 @@ routes.post("/rooms/:roomId/join", (request, response) => {
 
 routes.post("/rooms", (request, response) => {
   try {
-    const { player } = request.body;
+    const room = game.createRoom();
 
-    const room = game.createRoom(player);
+    if (!room || !room.id) {
+      return response.status(400).json({ error: "Room not found." });
+    }
 
-    return response.json(room);
+    return response.status(201).json(room);
   } catch (error) {
     console.error(error);
 

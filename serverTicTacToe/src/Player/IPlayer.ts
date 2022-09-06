@@ -1,7 +1,8 @@
 export interface IPlayer {
-  readonly id: string;
+  id: string;
   score: number;
   name: string;
+  playTurn: 0 | 1;
 
   getScore(): number;
   addScore(): number;

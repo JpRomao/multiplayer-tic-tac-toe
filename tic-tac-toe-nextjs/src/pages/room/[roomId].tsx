@@ -3,8 +3,8 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import io, { Socket } from "socket.io-client";
-import { PlayerContext } from "../../contexts/PlayerContext";
 
+import { PlayerContext } from "../../contexts/PlayerContext";
 import server from "../../services/server";
 import { Room } from "../../types/room";
 
@@ -18,12 +18,13 @@ const Room: NextPage = () => {
   useEffect(() => {
     if (socket?.connected) return;
 
+    if (!router.query.roomId) return;
+
     const newSocket = io("http://localhost:3334", {
-      reconnectionAttempts: 3,
-      reconnectionDelay: 1000,
-      autoConnect: true,
-      secure: true,
-      transports: ["", "websocket"],
+      transports: ["websocket"],
+      query: {
+        roomId: router.query.roomId,
+      },
     });
 
     setSocket(newSocket);
@@ -31,30 +32,61 @@ const Room: NextPage = () => {
     return () => {
       newSocket.disconnect();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.query.roomId]);
 
   useEffect(() => {
-    if (!router) return;
+    if (player.id) {
+      return;
+    }
+
+    const currentPlayer = JSON.parse(localStorage.getItem("player") || "{}");
+
+    if (!currentPlayer.id) {
+      router.push("/");
+    }
+
+    updatePlayer(currentPlayer);
+  }, [player, router, updatePlayer]);
+
+  useEffect(() => {
+    if (room && room.id) return;
+
+    console.log("room", room);
+
+    if (!router.query.roomId) return;
 
     const { roomId } = router.query;
 
-    server.get(`rooms/${roomId}`).then((response) => {
-      if (response.status !== 200) {
-        router.push("/");
-      }
+    server
+      .post(`rooms/${roomId}/join`, {
+        player,
+      })
+      .then((response) => {
+        if (response.status !== 200 && response.status !== 201) {
+          router.push("/");
+        }
 
-      const { data } = response;
+        const { data } = response;
 
-      setRoom(data);
-    });
-  }, [socket, router, updatePlayer]);
+        setRoom(data.room);
+        updatePlayer(data.player);
+      });
+  }, [router, player, room, updatePlayer]);
 
   useEffect(() => {
-    if (!socket || !room) return;
+    if (!socket || !room?.id) {
+      console.log("socket or room not found");
+
+      return;
+    }
 
     socket.on("played", ({ board, playerTurn, turn }: Room) => {
+      console.log("played -> ", { board, playerTurn, turn });
+      console.log("room -> ", room);
+
       setRoom((room) => {
-        if (!room) return null;
+        if (!room || !room.id) return null;
 
         return {
           ...room,
@@ -64,10 +96,26 @@ const Room: NextPage = () => {
         };
       });
     });
-  }, [socket, room]);
+
+    return () => {
+      socket.off("played");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket]);
 
   const handleCellClick = (index: number) => {
-    if (!socket || !player || !player.name || !room?.id || !room.isRunning) {
+    if (!socket?.connected || !player || !player.name || !room?.id) {
+      console.log({
+        player,
+        room,
+        socket,
+      });
+      return;
+    }
+
+    console.log(player.playTurn);
+
+    if (player.playTurn !== room.playerTurn) {
       return;
     }
 

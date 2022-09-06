@@ -15,21 +15,25 @@ class Room implements IRoom {
   playerTurn: 0 | 1;
   board: Board;
 
-  constructor(id: string, name: string, player: Player) {
+  constructor(id: string, name: string) {
     this.id = id;
     this.name = name;
     this.players = {
-      "1": player,
+      "1": null,
       "2": null,
     };
     this.turn = 1;
     this.isRunning = false;
-    this.playerTurn = 1;
+    this.playerTurn = 0;
     this.board = new Board();
   }
 
   startGame(): void {
     if (this.players["1"] && this.players["2"]) {
+      this.players["1"].playTurn = 0;
+
+      this.players["2"].playTurn = 1;
+
       this.isRunning = true;
     } else {
       console.log("not enough players");
@@ -82,15 +86,58 @@ class Room implements IRoom {
     this.turn = 0;
   }
 
-  setPlayer(player: Player): void {
+  setPlayer(player: Player): Player | void {
+    if (this.players["1"]?.id === player.id) {
+      console.log("player already in room");
+
+      return this.players["1"];
+      // throw new Error("Player already in room.");
+    } else if (this.players["2"]?.id === player.id) {
+      console.log("player already in room");
+
+      return this.players["2"];
+      // throw new Error("Player already in room.");
+    }
+
     if (!this.players["1"]?.id) {
       console.log("set player 1");
+
       this.players["1"] = player;
+
+      this.players["1"].playTurn = 0;
+
+      return this.players["1"];
+    } else if (this.players["1"].id === player.id) {
+      console.log(
+        `player name: ${player.name} - id: ${player.id} already in room`
+      );
+
+      this.players["1"] = player;
+
+      this.players["1"].playTurn = 0;
+
+      return this.players["1"];
     } else if (!this.players["2"]?.id) {
       console.log("set player 2");
+
       this.players["2"] = player;
+
+      this.players["2"].playTurn = 1;
+
+      return this.players["2"];
+    } else if (this.players["2"].id === player.id) {
+      console.log(
+        `player name: ${player.name} - id: ${player.id} already in room`
+      );
+
+      this.players["2"] = player;
+
+      this.players["2"].playTurn = 1;
+
+      return this.players["2"];
     } else {
       console.log("room is full");
+
       return;
       // throw new Error("Room is full.");
     }
@@ -102,11 +149,15 @@ class Room implements IRoom {
     | { player: Player; playerValue: 0 | 1 }
     | { player: null; playerValue: null } {
     if (this.players["1"]?.id === playerId) {
+      console.log("find player 1");
+
       return {
         player: this.players["1"],
         playerValue: 0,
       };
     } else if (this.players["2"]?.id === playerId) {
+      console.log("find player 2");
+
       return {
         player: this.players["2"],
         playerValue: 1,
@@ -119,44 +170,6 @@ class Room implements IRoom {
       };
       // throw new Error("Player not found.");
     }
-  }
-
-  play(position: BoardAvailablePositions, playerId: string): RoomProps | void {
-    if (!this.isRunning) {
-      console.log("game is not running");
-      return;
-      // throw new Error("Game is not running.");
-    }
-
-    const isPositionAvailable = this.board.isPositionAvailable(position);
-
-    if (!isPositionAvailable) {
-      console.log("position not available");
-      return;
-      // throw new Error("Position not available.");
-    }
-
-    const { playerValue } = this.getPlayerById(playerId);
-
-    if (!playerValue) {
-      return;
-    }
-
-    this.board.setBoardPosition(position, playerValue);
-
-    const isBoardFull = this.board.checkIfBoardIsFull();
-
-    if (isBoardFull) {
-      this.stopGame();
-    }
-
-    this.passTurn();
-
-    return {
-      playerTurn: this.playerTurn,
-      turn: this.turn,
-      board: this.board.board,
-    };
   }
 }
 

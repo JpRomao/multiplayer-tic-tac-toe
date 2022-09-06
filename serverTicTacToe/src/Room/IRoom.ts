@@ -32,6 +32,5 @@ export interface IRoom {
   setGame(): RoomProps;
   stopGame(): void;
   roomIsEmpty(): boolean;
-  play(position: BoardAvailablePositions, playerId: string): RoomProps | void;
   startGame(): void;
 }

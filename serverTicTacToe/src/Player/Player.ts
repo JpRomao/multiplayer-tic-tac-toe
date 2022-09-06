@@ -3,15 +3,17 @@ import { getRandomInt } from "../utils/rng";
 import Game from "../Game/Game";
 
 class Player implements IPlayer {
-  readonly id: string;
+  id: string;
   score: number;
   name: string;
+  playTurn: 0 | 1;
 
   constructor(name: string) {
     this.id = this.generatePlayerId();
 
     this.name = name;
     this.score = 0;
+    this.playTurn = 0;
   }
 
   generatePlayerId(): string {

@@ -9,7 +9,7 @@ import { Room } from "../types/room";
 import { PlayerContext } from "../contexts/PlayerContext";
 import { Player } from "../types/player";
 
-const Home: NextPage = () => {
+const Lobby: NextPage = () => {
   const router = useRouter();
   const { player, updatePlayer } = useContext(PlayerContext);
 
@@ -31,37 +31,31 @@ const Home: NextPage = () => {
       router.push("/");
     }
 
-    if (!player.name) {
-      updatePlayer(currentPlayer);
-    }
+    updatePlayer(currentPlayer);
+  }, [player, router, updatePlayer]);
 
+  useEffect(() => {
     getRooms().then((rooms) => {
       setRooms(rooms);
     });
-  }, [player, router, updatePlayer]);
+  }, []);
 
   const handleCreateRoom = async () => {
     if (!player.name) return;
 
-    const { data } = await server.post("/rooms", {
-      player,
-    });
+    const response = await server.post("/rooms");
 
-    router.push(`/room/${data.room.id}`);
+    if (response.status !== 201) {
+      return;
+    }
+
+    console.log(response.data);
+
+    router.push(`/room/${response.data.id}`);
   };
 
   const handleJoinRoom = async (roomId: string) => {
-    if (!player.name) return;
-
-    const { data } = await server.post(`/rooms/${roomId}/join`, {
-      player,
-    });
-
-    if (!data) return;
-
-    updatePlayer(data.player);
-
-    router.push(`/room/${data.room.id}`);
+    router.push(`/room/${roomId}`);
   };
 
   return (
@@ -77,7 +71,14 @@ const Home: NextPage = () => {
           <Flex direction="column">
             <Text>Rooms</Text>
 
-            <Button bg="pink.600" onClick={getRooms}>
+            <Button
+              bg="pink.600"
+              onClick={() => {
+                getRooms().then((rooms) => {
+                  setRooms(rooms);
+                });
+              }}
+            >
               reload
             </Button>
 
@@ -118,4 +119,4 @@ export async function getStaticProps({ locale }: GetStaticPropsContext) {
   };
 }
 
-export default Home;
+export default Lobby;
