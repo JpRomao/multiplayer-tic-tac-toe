@@ -15,10 +15,15 @@ app.use(express.json());
 
 app.use(routes);
 
-const sockets = new socketio(Number(process.env.websocket_port), {
+const sockets = new socketio(Number(process.env.websocket_port) || 3334, {
   cors: {
     origin: process.env.frontend_url,
   },
+  pingTimeout: 60000,
+});
+
+sockets.on("connect_error", (err) => {
+  console.log(`connect_error due to ${err.message}`);
 });
 
 sockets.on("connection", (socket) => {
@@ -53,7 +58,7 @@ sockets.on("connection", (socket) => {
 
       return;
       // throw new Error("Player not found.");
-    } else if (!position) {
+    } else if (position < 0 || position > 8) {
       console.error("no position");
 
       return;
@@ -73,7 +78,9 @@ sockets.on("connection", (socket) => {
 
     const { board, playerTurn, turn } = room;
 
-    socket.in(roomName).emit("played", { board, playerTurn, turn });
+    console.log("Emiting played to room", roomName);
+
+    socket.to(roomName).emit("played", { board, playerTurn, turn });
   });
 
   socket.on("disconnect", (roomId: string) => {
@@ -110,6 +117,8 @@ sockets.on("connection", (socket) => {
   });
 });
 
-app.listen(process.env.server_port, () => {
-  console.error(`Server listening on port 3333 and sockets on port 3334! 🚀`);
+app.listen(process.env.server_port || 3333, () => {
+  console.error(
+    `Server listening on port ${process.env.server_port} and sockets on port ${process.env.websocket_port}! 🚀`
+  );
 });

@@ -81,9 +81,10 @@ const Room: NextPage = () => {
       return;
     }
 
+    console.log("socket", socket.id);
+
     socket.on("played", ({ board, playerTurn, turn }: Room) => {
       console.log("played -> ", { board, playerTurn, turn });
-      console.log("room -> ", room);
 
       setRoom((room) => {
         if (!room || !room.id) return null;
@@ -113,11 +114,7 @@ const Room: NextPage = () => {
       return;
     }
 
-    console.log(player.playTurn);
-
-    if (player.playTurn !== room.playerTurn) {
-      return;
-    }
+    console.log(index);
 
     socket.emit("play", {
       playerId: player.id,

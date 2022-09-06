@@ -38,6 +38,7 @@ class Game implements IGame {
 
     if (roomExists.byId) {
       console.error("Room already exists.");
+
       return;
       // throw new Error("You already created a room.");
     } else if (roomExists.byName) {
@@ -86,7 +87,8 @@ class Game implements IGame {
 
     if (!room) {
       console.error("leave error");
-      throw new Error("Room not found.");
+      // throw new Error("Room not found.");
+      return;
     }
 
     room.leaveRoom(playerId);
@@ -103,7 +105,8 @@ class Game implements IGame {
 
     if (!room) {
       console.error("delete error");
-      throw new Error("Room not found.");
+      // throw new Error("Room not found.");
+      return;
     }
 
     this.rooms = this.rooms.filter((room) => room.id !== roomId);
@@ -114,6 +117,7 @@ class Game implements IGame {
       console.error("findByPlayerId error");
       console.error("player not found error");
       // throw new Error("Player not found.");
+      return;
     }
 
     return this.rooms.find(
@@ -189,7 +193,9 @@ class Game implements IGame {
   findRoomByRoomName(roomName: string) {
     if (!roomName) {
       console.error("findByRoomName error");
-      throw new Error("Room not found.");
+      console.error("RoomName not passed error");
+      // throw new Error("Room not found.");
+      return;
     }
 
     return this.rooms.find((room) => room.name === roomName);
@@ -213,9 +219,6 @@ class Game implements IGame {
   play(playerId: string, position: BoardAvailablePositions): void {
     const room = this.findRoomByPlayerId(playerId);
 
-    console.log("playerID -> ", playerId);
-    console.log("position -> ", position);
-
     if (!room) {
       console.error("findByPlayerId error");
 
@@ -231,7 +234,7 @@ class Game implements IGame {
     }
 
     const isPositionAvailable = room.board.isPositionAvailable(position);
-
+    console.log("isPositionAvailable -> ", isPositionAvailable);
     if (!isPositionAvailable) {
       console.error("Position not available.");
 
@@ -243,10 +246,16 @@ class Game implements IGame {
     console.log("position", position);
 
     const { player } = room.getPlayerById(playerId);
-
-    if (!player || !player.playTurn) {
+    console.log("player turn -> ", player?.playTurn);
+    if (!player) {
       console.error("Player not found.");
 
+      // throw new Error("Player not found.");
+      return;
+    } else if (player.playTurn !== 0 && player.playTurn !== 1) {
+      console.error("Player can't play.");
+
+      // throw new Error("Player can't play.");
       return;
     }
 
