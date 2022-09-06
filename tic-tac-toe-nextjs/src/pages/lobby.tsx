@@ -43,15 +43,13 @@ const Lobby: NextPage = () => {
   const handleCreateRoom = async () => {
     if (!player.name) return;
 
-    const response = await server.post("/rooms");
+    const response = await server.post("/rooms/create");
 
     if (response.status !== 201) {
       return;
     }
 
-    console.log(response.data);
-
-    router.push(`/room/${response.data.id}`);
+    await router.push(`/room/${response.data.id}`);
   };
 
   const handleJoinRoom = async (roomId: string) => {

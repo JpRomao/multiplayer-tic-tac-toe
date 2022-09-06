@@ -87,6 +87,8 @@ class Room implements IRoom {
   }
 
   setPlayer(player: Player): Player | void {
+    console.log("setting player", player);
+
     if (this.players["1"]?.id === player.id) {
       console.log("player already in room");
 

@@ -52,6 +52,8 @@ class Game implements IGame {
 
     this.rooms.push(room);
 
+    console.log("allRooms -> ", this.rooms);
+
     return room;
   }
 
@@ -59,6 +61,14 @@ class Game implements IGame {
     roomId: string,
     player: Player
   ): { player: Player; room: Room } | void {
+    console.log("roomId on join -> ", roomId);
+
+    const playerAlreadyAtRoom = this.verifyPlayerAlreadyAtRoom(roomId, player);
+
+    if (playerAlreadyAtRoom) {
+      return playerAlreadyAtRoom;
+    }
+
     const room = this.findRoomByRoomId(roomId);
 
     if (!room) {
@@ -68,13 +78,15 @@ class Game implements IGame {
       return;
     }
 
+    console.log("room found", room);
+
     player.playTurn = 0;
 
     player = room.setPlayer(player) || player;
 
     room.startGame();
 
-    console.error(`Player ${player.name} joined room ${room.name}.`);
+    console.log(`Player ${player.name} joined ${room.name}.`);
 
     return {
       player,
@@ -96,6 +108,8 @@ class Game implements IGame {
     const isRoomEmpty = room.roomIsEmpty();
 
     if (isRoomEmpty) {
+      console.log("deleting room -> ", room.id);
+
       this.deleteRoom(roomId);
     }
   }
@@ -143,7 +157,7 @@ class Game implements IGame {
     } else if (player.id === room.players["1"].id) {
       console.error("Player 1 already at room error");
 
-      // room.players["1"].playTurn = 0;
+      room.players["1"].playTurn = 0;
 
       return {
         player: room.players["1"],
@@ -156,7 +170,7 @@ class Game implements IGame {
     } else if (player.id === room.players["2"].id) {
       console.error("Player 2 already at room error");
 
-      // room.players["2"].playTurn = 1;
+      room.players["2"].playTurn = 1;
 
       return {
         player: room.players["2"],
@@ -172,6 +186,7 @@ class Game implements IGame {
 
   findRoomByRoomId(roomId: string) {
     if (!roomId) {
+      console.error("hehehe");
       console.error("findByRoomId error");
       console.error("RoomId not passed error");
 
@@ -181,6 +196,8 @@ class Game implements IGame {
     const room = this.rooms.find((room) => room.id === roomId);
 
     if (!room) {
+      console.error("aaaaaa");
+
       console.error("findByRoomId error");
       console.error("room not found");
 
@@ -192,6 +209,8 @@ class Game implements IGame {
 
   findRoomByRoomName(roomName: string) {
     if (!roomName) {
+      console.error("eeeeee");
+
       console.error("findByRoomName error");
       console.error("RoomName not passed error");
       // throw new Error("Room not found.");

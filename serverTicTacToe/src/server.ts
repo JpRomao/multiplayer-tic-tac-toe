@@ -6,6 +6,7 @@ import cors from "cors";
 
 import game from "./Game/Game";
 import routes from "./routes";
+import Player from "./Player/Player";
 
 const app = express();
 
@@ -20,7 +21,10 @@ const sockets = new socketio(Number(process.env.websocket_port) || 3334, {
     origin: process.env.frontend_url,
   },
   pingTimeout: 60000,
+  transports: ["websocket"],
 });
+
+console.log(sockets.listeners("connection"));
 
 sockets.on("connect_error", (err) => {
   console.log(`connect_error due to ${err.message}`);
@@ -29,20 +33,19 @@ sockets.on("connect_error", (err) => {
 sockets.on("connection", (socket) => {
   console.error("New connection", socket.id);
 
-  const { roomId } = socket.handshake.query;
+  let roomName: string;
 
-  socket.join(`room-${roomId}`);
+  socket.on("join-room", (roomId: string, player: Player) => {
+    roomName = `room-${roomId}`;
+    console.log("roomName -> ", roomName);
 
-  console.log(`Player [${socket.id}] joined room [room-${roomId}]`);
+    socket.join(roomName);
 
-  const roomName = `room-${roomId}`;
+    console.log(`Player [${socket.id}] joined [${roomName}]`);
 
-  socket.on("leave-game", (roomId: string, playerId: string) => {
-    game.leaveRoom(roomId, playerId);
+    const response = game.joinRoom(roomId, player);
 
-    socket.leave(roomId);
-
-    socket.in(roomName).emit("game-left", { roomId, playerId });
+    socket.to(roomName).emit("room-joined", response);
   });
 
   socket.on("play", ({ playerId, position, roomId }) => {
@@ -78,40 +81,36 @@ sockets.on("connection", (socket) => {
 
     const { board, playerTurn, turn } = room;
 
-    console.log("Emiting played to room", roomName);
+    console.log("Emiting played to ", roomName);
 
-    socket.to(roomName).emit("played", { board, playerTurn, turn });
+    socket.in(roomName).emit("played", { board, playerTurn, turn });
   });
 
-  socket.on("disconnect", (roomId: string) => {
-    console.log("disconnected", socket.id);
+  // socket.on("disconnect", (roomId: string) => {
+  //   console.log("disconnected", socket.id);
 
-    const room = game.findRoomByRoomId(roomId);
+  //   const room = game.findRoomByRoomId(roomId);
 
-    if (!room) {
-      console.error("room not found");
+  //   if (!room) {
+  //     console.error("room not found");
 
-      return;
-      // throw new Error("Room not found.");
-    }
+  //     return;
+  //     // throw new Error("Room not found.");
+  //   }
 
-    if (room.players["1"]?.id === roomId) {
-      game.leaveRoom(room.id, room.players[1].id);
+  //   if (room.players["1"]?.id === roomId) {
+  //     game.leaveRoom(room.id, room.players[1].id);
 
-      console.log(`User ${room.players["1"]?.name} disconnected`);
+  //     console.log(`User ${room.players["1"]?.name} disconnected`);
+  //   } else if (room.players["2"]?.id === roomId) {
+  //     game.leaveRoom(room.id, room.players[2].id);
 
-      return;
-    } else if (room.players["2"]?.id === roomId) {
-      game.leaveRoom(room.id, room.players[2].id);
-
-      console.log(`User ${room.players["2"]?.name} disconnected`);
-
-      return;
-    }
-  });
+  //     console.log(`User ${room.players["2"]?.name} disconnected`);
+  //   }
+  // });
 
   socket.on("error", (err) => {
-    console.error(err);
+    console.error("error -> ", err);
 
     return;
   });

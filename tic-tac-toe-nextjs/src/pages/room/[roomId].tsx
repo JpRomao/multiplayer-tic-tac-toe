@@ -5,8 +5,8 @@ import { useContext, useEffect, useState } from "react";
 import io, { Socket } from "socket.io-client";
 
 import { PlayerContext } from "../../contexts/PlayerContext";
-import server from "../../services/server";
 import { Room } from "../../types/room";
+import { getPlayer } from "../../utils/getPlayer";
 
 const Room: NextPage = () => {
   const router = useRouter();
@@ -14,18 +14,19 @@ const Room: NextPage = () => {
 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [room, setRoom] = useState<Room | null>(null);
+  const [hasJoined, setHasJoined] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
 
   useEffect(() => {
-    if (socket?.connected) return;
+    if (socket?.id) return;
 
-    if (!router.query.roomId) return;
+    console.log("initializing socket", socket);
 
     const newSocket = io("http://localhost:3334", {
       transports: ["websocket"],
-      query: {
-        roomId: router.query.roomId,
-      },
     });
+
+    console.log("socket -> ", newSocket);
 
     setSocket(newSocket);
 
@@ -33,7 +34,7 @@ const Room: NextPage = () => {
       newSocket.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.query.roomId]);
+  }, []);
 
   useEffect(() => {
     if (player.id) {
@@ -50,38 +51,54 @@ const Room: NextPage = () => {
   }, [player, router, updatePlayer]);
 
   useEffect(() => {
-    if (room && room.id) return;
+    if (isJoining) return;
 
-    console.log("room", room);
+    if (hasJoined) return;
 
     if (!router.query.roomId) return;
 
-    const { roomId } = router.query;
+    if (!socket?.id) return;
 
-    server
-      .post(`rooms/${roomId}/join`, {
-        player,
-      })
-      .then((response) => {
-        if (response.status !== 200 && response.status !== 201) {
-          router.push("/");
-        }
+    const playerInfo = getPlayer();
 
-        const { data } = response;
+    if (!player || !player.id) {
+      if (playerInfo) {
+        console.log("updating Player Info");
 
-        setRoom(data.room);
-        updatePlayer(data.player);
-      });
-  }, [router, player, room, updatePlayer]);
+        updatePlayer(playerInfo);
+      }
+
+      return;
+    }
+
+    console.log("isJoining", isJoining);
+
+    console.log("joining room -> ", router.query.roomId);
+
+    console.log("player -> ", player);
+
+    socket.emit("join-room", router.query.roomId, player);
+
+    setIsJoining(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.query.roomId, hasJoined, isJoining]);
 
   useEffect(() => {
-    if (!socket || !room?.id) {
+    if (!socket) {
       console.log("socket or room not found");
 
       return;
     }
 
-    console.log("socket", socket.id);
+    socket.on("room-joined", (data) => {
+      console.log("room-joined -> ", data);
+
+      setRoom(data.room);
+
+      setIsJoining(false);
+
+      setHasJoined(true);
+    });
 
     socket.on("played", ({ board, playerTurn, turn }: Room) => {
       console.log("played -> ", { board, playerTurn, turn });
@@ -100,21 +117,21 @@ const Room: NextPage = () => {
 
     return () => {
       socket.off("played");
+      socket.off("room-joined");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket]);
+  }, [socket, hasJoined]);
 
   const handleCellClick = (index: number) => {
-    if (!socket?.connected || !player || !player.name || !room?.id) {
+    if (!socket || !player || !player.name || !room?.id) {
       console.log({
         player,
         room,
         socket,
       });
+
       return;
     }
-
-    console.log(index);
 
     socket.emit("play", {
       playerId: player.id,

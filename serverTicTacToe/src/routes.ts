@@ -66,7 +66,7 @@ routes.post("/rooms/:roomId/join", (request, response) => {
   }
 });
 
-routes.post("/rooms", (request, response) => {
+routes.post("/rooms/create", (request, response) => {
   try {
     const room = game.createRoom();
 
