@@ -6,14 +6,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Jogo da velha</title>
+    <title>Jogo da velha | Lobby</title>
   </head>
 
   <body>
-    <h1>Jogo da velha</h1>
+    <h1>Lobby</h1>
 
-    <div id="app"></div>
+    <section>
+      <h2>Salas</h2>
 
-    <script src="../js/lobby.js"></script>
+      <div>
+        <button type="button" id="createRoom">Criar sala</button>
+
+        <p id="roomStatus">
+          Há <strong></strong> Salas e <strong></strong> em andamento
+        </p>
+      </div>
+
+      <section id="rooms"></section>
+    </section>
+
+    <script type="module" src="../js/lobby.js"></script>
   </body>
 </html>

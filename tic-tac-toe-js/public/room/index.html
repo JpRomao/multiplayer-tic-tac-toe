@@ -6,14 +6,48 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Jogo da velha</title>
+    <title>Jogo da velha |</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        outline: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-color: #f8f8f8;
+      }
+      #board {
+        width: 75%;
+        height: 75%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+      }
+
+      #board .position {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 5rem;
+        color: #333;
+        border: 1px solid #333;
+        border-collapse: collapse;
+        cursor: pointer;
+      }
+    </style>
   </head>
 
   <body>
-    <h1>Jogo da velha</h1>
+    <div id="board"></div>
 
-    <div id="app"></div>
-
-    <script src="../js/room.js"></script>
+    <script type="module" src="../js/room.js"></script>
   </body>
 </html>

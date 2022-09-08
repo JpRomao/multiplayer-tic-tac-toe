@@ -1,23 +1,35 @@
-// import axios from "axios";
+import { socket } from "./socket.js";
+import { treatName } from "../utils/nameTreat.js";
+import { getLocalStorage, setLocalStorage } from "../utils/localStorage.js";
 
-import axios from "axios";
+const form = document.getElementById("playerForm");
 
-async function createPlayer(event) {
+const player = getLocalStorage("player");
+
+if (player && player.id) {
+  window.location.href = "/lobby";
+}
+
+function createPlayer(playerName) {
+  if (!playerName) {
+    return;
+  }
+
+  playerName = treatName(playerName);
+
+  socket.emit("create-player", playerName);
+}
+
+form.onsubmit = (event) => {
   event.preventDefault();
 
-  console.log(event);
+  const playerName = document.getElementById("playerName").value;
 
-  const playerName = document.getElementsByName("playerName")[0].value;
+  createPlayer(playerName);
+};
 
-  const player = await axios.post("/players/create", {
-    playerName,
-  });
+socket.on("player-created", (player) => {
+  setLocalStorage("player", JSON.stringify(player));
 
-  window.history.pushState({}, "", `/lobby`);
-
-  // const response = await axios.post("/api/players", {
-  //   playerName,
-  // });
-
-  // console.log(response);
-}
+  window.location.href = "/lobby";
+});
