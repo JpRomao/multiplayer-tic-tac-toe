@@ -3,17 +3,19 @@ import { getRandomInt } from "../utils/rng";
 import Game from "../Game/Game";
 
 class Player implements IPlayer {
-  id: string;
+  id: string | null;
   score: number;
   name: string;
-  playTurn: 0 | 1;
+  playTurn: 1 | 2;
+  type: "human";
 
   constructor(name: string) {
-    this.id = this.generatePlayerId();
+    this.id = name ? this.generatePlayerId() : null;
 
     this.name = name;
     this.score = 0;
-    this.playTurn = 0;
+    this.playTurn = 1;
+    this.type = "human";
   }
 
   generatePlayerId(): string {
@@ -22,9 +24,9 @@ class Player implements IPlayer {
 
     const playerId = getRandomInt(min, max).toString();
 
-    const playerExists = Game.players.find((player) => player.id === playerId);
+    const idAlreadyUsed = Game.players.find((player) => player.id === playerId);
 
-    if (playerExists) {
+    if (idAlreadyUsed) {
       return this.generatePlayerId();
     }
 

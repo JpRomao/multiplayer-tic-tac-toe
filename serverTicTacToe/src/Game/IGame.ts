@@ -5,17 +5,13 @@ import Room from "../Room/Room";
 export interface IGame {
   rooms: Room[];
 
+  findPlayerByPlayerId(playerId: string): Player | void;
   createRoom(player: Player): Room | void;
-  joinRoom(
-    roomId: string,
-    player: Player
-  ): { player: Player; room: Room } | void;
+  joinRoom(roomId: string, player: Player): Room;
   leaveRoom(roomId: string, playerId: string): void;
-  play(playerId: string, position: BoardAvailablePositions): void;
+  play(playerId: string, position: BoardAvailablePositions): Room;
   deleteRoom(roomId: string): void;
   generateRoomId(): string;
-  verifyPlayerAlreadyAtRoom(
-    roomId: string,
-    player: Player
-  ): { player: Player; room: Room } | void;
+  verifyPlayerAlreadyAtRoom(roomId: string, player: Player): Room;
+  replaceRoom(room: Room): Room;
 }

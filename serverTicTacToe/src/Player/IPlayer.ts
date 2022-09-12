@@ -1,8 +1,11 @@
+import { BoardValue } from "../Board/IBoard";
+
 export interface IPlayer {
-  id: string;
+  id: string | null;
   score: number;
   name: string;
-  playTurn: 0 | 1;
+  playTurn: BoardValue;
+  type: "human";
 
   getScore(): number;
   addScore(): number;

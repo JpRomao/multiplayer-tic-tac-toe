@@ -2,6 +2,6 @@ export interface Player {
   id: string;
   score: number;
   name: string;
-  roomId: string;
-  playTurn: 0 | 1;
+  playTurn: 1 | 2;
+  type: "human";
 }

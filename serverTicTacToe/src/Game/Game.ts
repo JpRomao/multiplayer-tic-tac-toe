@@ -15,19 +15,26 @@ class Game implements IGame {
     this.players = [];
   }
 
-  createRoom(): Room | void {
+  createRoom(player: Player): Room {
+    console.log(player);
+    if (!player || !player.id) {
+      console.error("createRoom error");
+      console.error("player not passed");
+      // throw new Error("Player not found.");
+      return {} as Room;
+    }
     const roomId = this.generateRoomId();
 
-    const roomName = `Room ${roomId}`;
+    const roomName = `Room-${roomId}`;
 
     if (!roomName) {
       console.error("Room name is required.");
       // throw new Error("Room name is required.");
-      return;
+      return {} as Room;
     } else if (!roomId) {
       console.error("create error");
 
-      return;
+      return {} as Room;
       // throw new Error("Room not found.");
     }
 
@@ -39,30 +46,25 @@ class Game implements IGame {
     if (roomExists.byId) {
       console.error("Room already exists.");
 
-      return;
+      return {} as Room;
       // throw new Error("You already created a room.");
     } else if (roomExists.byName) {
       console.error("Room already exists.");
 
-      return;
+      return {} as Room;
       // throw new Error("Room with this name already exists.");
     }
 
     const room = new Room(roomId, roomName);
 
-    this.rooms.push(room);
+    room.players["1"] = player;
 
-    console.log("allRooms -> ", this.rooms);
+    this.rooms.push(room);
 
     return room;
   }
 
-  joinRoom(
-    roomId: string,
-    player: Player
-  ): { player: Player; room: Room } | void {
-    console.log("roomId on join -> ", roomId);
-
+  joinRoom(roomId: string, player: Player): Room {
     const playerAlreadyAtRoom = this.verifyPlayerAlreadyAtRoom(roomId, player);
 
     if (playerAlreadyAtRoom) {
@@ -75,23 +77,22 @@ class Game implements IGame {
       console.error("join error");
 
       // throw new Error("Room not found.");
-      return;
+      return {} as Room;
     }
 
     console.log("room found", room);
 
-    player.playTurn = 0;
+    player.playTurn = 1;
 
     player = room.setPlayer(player) || player;
 
     room.startGame();
 
+    this.replaceRoom(room);
+
     console.log(`Player ${player.name} joined ${room.name}.`);
 
-    return {
-      player,
-      room,
-    };
+    return room;
   }
 
   leaveRoom(roomId: string, playerId: string): void {
@@ -105,25 +106,21 @@ class Game implements IGame {
 
     room.leaveRoom(playerId);
 
-    const isRoomEmpty = room.roomIsEmpty();
-
-    if (isRoomEmpty) {
-      console.log("deleting room -> ", room.id);
-
-      this.deleteRoom(roomId);
-    }
+    this.replaceRoom(room);
   }
 
   deleteRoom(roomId: string): void {
-    const room = this.findRoomByRoomId(roomId);
+    const roomIndex = this.rooms.findIndex((room) => room.id === roomId);
 
-    if (!room) {
+    if (roomIndex === -1) {
       console.error("delete error");
       // throw new Error("Room not found.");
       return;
     }
 
-    this.rooms = this.rooms.filter((room) => room.id !== roomId);
+    this.rooms.splice(roomIndex, 1);
+
+    console.log("room deleted -> ", roomId);
   }
 
   findRoomByPlayerId(playerId: string) {
@@ -136,71 +133,34 @@ class Game implements IGame {
 
     return this.rooms.find(
       (room) =>
-        room.players["1"]?.id === playerId || room.players["2"]?.id === playerId
+        room.players["1"].id === playerId || room.players["2"].id === playerId
     );
   }
 
-  verifyPlayerAlreadyAtRoom(
-    roomId: string,
-    player: Player
-  ): { player: Player; room: Room } | void {
+  verifyPlayerAlreadyAtRoom(roomId: string, player: Player): Room {
+    if (!player.id) {
+      return {} as Room;
+    }
+
     const room = this.findRoomByRoomId(roomId);
 
     if (!room) {
       console.error("Room not found error");
 
-      return;
+      return {} as Room;
     }
 
-    if (!room.players["1"]) {
-      return;
-    } else if (player.id === room.players["1"].id) {
-      console.error("Player 1 already at room error");
-
-      room.players["1"].playTurn = 0;
-
-      return {
-        player: room.players["1"],
-        room,
-      };
-    }
-
-    if (!room.players["2"]) {
-      return;
-    } else if (player.id === room.players["2"].id) {
-      console.error("Player 2 already at room error");
-
-      room.players["2"].playTurn = 1;
-
-      return {
-        player: room.players["2"],
-        room,
-      };
-    }
-
-    return {
-      player,
-      room,
-    };
+    return room;
   }
 
   findRoomByRoomId(roomId: string) {
     if (!roomId) {
-      console.error("hehehe");
-      console.error("findByRoomId error");
-      console.error("RoomId not passed error");
-
       return;
     }
 
     const room = this.rooms.find((room) => room.id === roomId);
 
     if (!room) {
-      console.error("aaaaaa");
-
-      console.error("findByRoomId error");
-      console.error("room not found");
-
       return;
     }
 
@@ -220,6 +180,17 @@ class Game implements IGame {
     return this.rooms.find((room) => room.name === roomName);
   }
 
+  findPlayerByPlayerId(playerId: string): Player | void {
+    if (!playerId) {
+      console.error("findByPlayerId error");
+      console.error("player not found error");
+      // throw new Error("Player not found.");
+      return;
+    }
+
+    return this.players.find((player) => player.id === playerId);
+  }
+
   generateRoomId(): string {
     const min = 1;
     const max = 99999;
@@ -235,58 +206,107 @@ class Game implements IGame {
     return roomId;
   }
 
-  play(playerId: string, position: BoardAvailablePositions): void {
+  replaceRoom(newRoom: Room): Room {
+    const roomIndex = this.rooms.findIndex((room) => room.id === newRoom.id);
+
+    if (roomIndex === -1) {
+      console.error("replace error");
+      // throw new Error("Room not found.");
+      return {} as Room;
+    }
+
+    if (newRoom.roomIsEmpty()) {
+      this.deleteRoom(newRoom.id);
+
+      return {} as Room;
+    }
+
+    this.rooms[roomIndex] = newRoom;
+
+    return newRoom;
+  }
+
+  play(playerId: string, position: BoardAvailablePositions): Room {
     const room = this.findRoomByPlayerId(playerId);
 
     if (!room) {
       console.error("findByPlayerId error");
 
       // throw new Error("Room not found.");
-      return;
+      return {} as Room;
     }
 
     if (!room.isRunning) {
       console.error("Game is not running.");
 
       // throw new Error("Game is not running.");
-      return;
+      return room;
     }
 
     const isPositionAvailable = room.board.isPositionAvailable(position);
-    console.log("isPositionAvailable -> ", isPositionAvailable);
+
     if (!isPositionAvailable) {
       console.error("Position not available.");
 
       // throw new Error("Position is not available.");
-      return;
+      return room;
     }
 
-    console.log("playerId", playerId);
-    console.log("position", position);
-
     const { player } = room.getPlayerById(playerId);
-    console.log("player turn -> ", player?.playTurn);
+
     if (!player) {
       console.error("Player not found.");
 
       // throw new Error("Player not found.");
-      return;
-    } else if (player.playTurn !== 0 && player.playTurn !== 1) {
+      return room;
+    } else if (player.playTurn !== 1 && player.playTurn !== 2) {
       console.error("Player can't play.");
 
       // throw new Error("Player can't play.");
-      return;
+      return room;
     }
 
     if (player.playTurn !== room.playerTurn) {
       console.error("It's not your turn.");
 
-      return;
+      return room;
     }
 
     room.board.setBoardPosition(position, room.playerTurn);
 
+    room.checkWinner();
+
+    let winner = room.checkWinner();
+
+    if (winner) {
+      this.replaceRoom(room);
+
+      return room;
+    }
+
+    room.turn++;
+
+    if (room.isAiActive) {
+      room.aiPlay();
+
+      if (winner) {
+        this.replaceRoom(room);
+
+        return room;
+      }
+
+      room.turn++;
+
+      this.replaceRoom(room);
+
+      return room;
+    }
+
     room.passTurn();
+
+    this.replaceRoom(room);
+
+    return room;
   }
 }
 

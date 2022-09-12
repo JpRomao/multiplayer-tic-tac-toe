@@ -1,4 +1,6 @@
 export interface Board {
-  board: (0 | 1 | null)[];
+  board: BoardValue[];
   isFull: boolean;
 }
+
+export type BoardValue = 1 | 2;

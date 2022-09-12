@@ -1,34 +1,41 @@
-import { BoardAvailablePositions } from "../Board/IBoard";
+import { BoardValue } from "../Board/IBoard";
 import Board from "../Board/Board";
-import { IPlayer } from "../Player/IPlayer";
+import { HardAi } from "../Ai/HardAi/HardAi";
+import { BasicAi } from "../Ai/BasicAi/BasicAi";
+import Player from "../Player/Player";
 
 export interface RoomProps {
-  playerTurn: 0 | 1;
+  playerTurn: BoardValue;
   turn: number;
-  board: (0 | 1 | null)[];
+  board: BoardValue[] | null[];
+  aiLevel: "easy" | "hard";
 }
 
 export interface IRoom {
   id: string;
   name: string;
   players: {
-    "1"?: IPlayer | null;
-    "2"?: IPlayer | null;
+    "1": Player;
+    "2": Player | BasicAi | HardAi;
   };
   turn: number;
   isRunning: boolean;
-  playerTurn: 0 | 1;
+  playerTurn: 1 | 2;
   board: Board;
+  isAiActive: boolean;
+  ai: BasicAi | HardAi;
+  winner: 0 | 1 | 2;
 
+  aiPlay(): void;
+  changeAiLevel(): void;
   passTurn(): void;
   resetTurns(): void;
   leaveRoom(playerId: string): void;
-  setPlayer(player: IPlayer): void;
-  getPlayerById(
-    playerId: string
-  ):
-    | { player: IPlayer; playerValue: 0 | 1 }
-    | { player: null; playerValue: null };
+  setPlayer(player: Player): Player | HardAi | BasicAi | void;
+  getPlayerById(playerId: string): {
+    player: Player | BasicAi | HardAi;
+    playerValue: 0 | 1 | 2;
+  };
   setGame(): RoomProps;
   stopGame(): void;
   roomIsEmpty(): boolean;

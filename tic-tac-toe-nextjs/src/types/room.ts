@@ -1,22 +1,25 @@
-import { Board } from "./board";
+import { Ai } from "./Ai";
+import { Board, BoardValue } from "./board";
 import { Player } from "./player";
 
 export interface RoomProps {
-  playerTurn: 1 | 2;
+  playerTurn: BoardValue;
   turn: number;
-  board: (0 | 1 | null)[];
+  board: BoardValue[] | null[];
+  aiLevel: "easy" | "hard";
 }
 
 export interface Room {
   id: string;
-  playerId: string;
   name: string;
   players: {
-    "1": Player | null;
-    "2": Player | null;
+    "1": Player;
+    "2": Player | Ai;
   };
   turn: number;
   isRunning: boolean;
-  playerTurn: 1 | 2;
+  playerTurn: BoardValue;
   board: Board;
+  isAiActive: boolean;
+  ai: Ai;
 }

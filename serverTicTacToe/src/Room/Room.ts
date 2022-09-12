@@ -1,38 +1,78 @@
-import { BoardAvailablePositions } from "../Board/IBoard";
+import { BoardValue } from "../Board/IBoard";
 import Board from "../Board/Board";
 import Player from "../Player/Player";
 import { IRoom, RoomProps } from "./IRoom";
+import { BasicAi } from "../Ai/BasicAi/BasicAi";
+import { HardAi } from "../Ai/HardAi/HardAi";
 
 class Room implements IRoom {
   id: string;
   name: string;
   players: {
-    "1": Player | null;
-    "2": Player | null;
+    "1": Player;
+    "2": Player | BasicAi | HardAi;
   };
   turn: number;
   isRunning: boolean;
-  playerTurn: 0 | 1;
+  playerTurn: BoardValue;
   board: Board;
+  isAiActive: boolean;
+  ai: BasicAi | HardAi;
+  winner: 0 | 1 | 2;
 
   constructor(id: string, name: string) {
     this.id = id;
     this.name = name;
     this.players = {
-      "1": null,
-      "2": null,
+      "1": {} as Player,
+      "2": {} as Player,
     };
     this.turn = 1;
-    this.isRunning = false;
-    this.playerTurn = 0;
+    this.isRunning = true;
+    this.playerTurn = 1;
     this.board = new Board();
+    this.isAiActive = true;
+    this.ai = new BasicAi();
+    this.winner = 0;
+  }
+
+  checkWinner() {
+    const winner = this.board.checkWinner();
+
+    this.winner = winner;
+
+    if (winner) {
+      this.players[winner].score += 1;
+
+      this.stopGame();
+    }
+
+    return winner;
+  }
+
+  aiPlay(): void {
+    if (!this.isAiActive) {
+      return;
+    }
+
+    const aiMove = this.ai.getAiMove(this.board);
+
+    this.board.setBoardPosition(aiMove, 2);
+  }
+
+  changeAiLevel(): void {
+    this.ai = this.ai instanceof BasicAi ? new HardAi() : new BasicAi();
   }
 
   startGame(): void {
     if (this.players["1"] && this.players["2"]) {
-      this.players["1"].playTurn = 0;
+      this.players["1"].playTurn = this.players["1"].playTurn === 1 ? 2 : 1;
 
-      this.players["2"].playTurn = 1;
+      this.players["2"].playTurn = this.players["2"].playTurn === 1 ? 2 : 1;
+
+      this.isRunning = true;
+    } else if (this.players["1"] && this.isAiActive) {
+      this.players["1"].playTurn = 1;
 
       this.isRunning = true;
     } else {
@@ -49,6 +89,7 @@ class Room implements IRoom {
       playerTurn: this.playerTurn,
       turn: this.turn,
       board: this.board.board,
+      aiLevel: this.ai.level,
     };
   }
 
@@ -57,10 +98,10 @@ class Room implements IRoom {
   }
 
   leaveRoom(playerId: string): void {
-    if (this.players["1"]?.id === playerId) {
-      this.players["1"] = null;
-    } else if (this.players["2"]?.id === playerId) {
-      this.players["2"] = null;
+    if (this.players["1"].id === playerId) {
+      this.players["1"] = {} as Player;
+    } else if (this.players["2"].id === playerId) {
+      this.players["2"] = {} as Player;
     } else {
       console.log("player not found");
       return;
@@ -69,7 +110,10 @@ class Room implements IRoom {
   }
 
   roomIsEmpty(): boolean {
-    if (!this.players["1"] && !this.players["2"]) {
+    if (
+      !this.players["1"].id &&
+      (!this.players["2"].id || this.players["2"].type === "ai")
+    ) {
       return true;
     }
 
@@ -77,36 +121,38 @@ class Room implements IRoom {
   }
 
   passTurn(): void {
-    this.turn++;
-    this.playerTurn = this.playerTurn === 0 ? 1 : 0;
+    this.playerTurn = this.playerTurn === 1 ? 2 : 1;
   }
 
   resetTurns(): void {
-    this.playerTurn = 0;
-    this.turn = 0;
+    this.playerTurn = 1;
+    this.turn = 1;
   }
 
   setPlayer(player: Player): Player | void {
     console.log("setting player", player);
 
-    if (this.players["1"]?.id === player.id) {
+    if (this.players["1"].id === player.id) {
       console.log("player already in room");
 
       return this.players["1"];
       // throw new Error("Player already in room.");
-    } else if (this.players["2"]?.id === player.id) {
+    } else if (
+      this.players["2"].id === player.id &&
+      this.players["2"].type !== "ai"
+    ) {
       console.log("player already in room");
 
       return this.players["2"];
       // throw new Error("Player already in room.");
     }
 
-    if (!this.players["1"]?.id) {
-      console.log("set player 1");
-
+    if (!this.players["1"].id) {
       this.players["1"] = player;
 
-      this.players["1"].playTurn = 0;
+      this.players["1"].playTurn = 1;
+
+      this.isAiActive = true;
 
       return this.players["1"];
     } else if (this.players["1"].id === player.id) {
@@ -116,15 +162,17 @@ class Room implements IRoom {
 
       this.players["1"] = player;
 
-      this.players["1"].playTurn = 0;
+      this.players["1"].playTurn = 1;
+
+      this.isAiActive = true;
 
       return this.players["1"];
-    } else if (!this.players["2"]?.id) {
-      console.log("set player 2");
-
+    } else if (!this.players["2"].id) {
       this.players["2"] = player;
 
-      this.players["2"].playTurn = 1;
+      this.players["2"].playTurn = 2;
+
+      this.isAiActive = false;
 
       return this.players["2"];
     } else if (this.players["2"].id === player.id) {
@@ -134,7 +182,9 @@ class Room implements IRoom {
 
       this.players["2"] = player;
 
-      this.players["2"].playTurn = 1;
+      this.players["2"].playTurn = 2;
+
+      this.isAiActive = false;
 
       return this.players["2"];
     } else {
@@ -145,30 +195,29 @@ class Room implements IRoom {
     }
   }
 
-  getPlayerById(
-    playerId: string
-  ):
-    | { player: Player; playerValue: 0 | 1 }
-    | { player: null; playerValue: null } {
-    if (this.players["1"]?.id === playerId) {
+  getPlayerById(playerId: string): {
+    player: Player | BasicAi | HardAi;
+    playerValue: 0 | 1 | 2;
+  } {
+    if (this.players["1"].id === playerId) {
       console.log("find player 1");
 
       return {
         player: this.players["1"],
-        playerValue: 0,
+        playerValue: 1,
       };
-    } else if (this.players["2"]?.id === playerId) {
+    } else if (this.players["2"].id === playerId) {
       console.log("find player 2");
 
       return {
         player: this.players["2"],
-        playerValue: 1,
+        playerValue: 2,
       };
     } else {
       console.log("player not found");
       return {
-        player: null,
-        playerValue: null,
+        player: {} as Player,
+        playerValue: 0,
       };
       // throw new Error("Player not found.");
     }

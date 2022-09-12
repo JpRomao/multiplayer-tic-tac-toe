@@ -7,11 +7,15 @@ import server from "../services/server";
 import { useRouter } from "next/router";
 import { Room } from "../types/room";
 import { PlayerContext } from "../contexts/PlayerContext";
-import { Player } from "../types/player";
+import { useLocalStorage } from "../utils/useLocalStorage";
+import { socket } from "../services/socket";
 
 const Lobby: NextPage = () => {
   const router = useRouter();
-  const { player, updatePlayer } = useContext(PlayerContext);
+
+  const { getItem, setItem } = useLocalStorage();
+
+  const { player, getPlayer } = useContext(PlayerContext);
 
   const [rooms, setRooms] = useState<Room[]>([]);
 
@@ -20,40 +24,61 @@ const Lobby: NextPage = () => {
   async function getRooms() {
     const { data } = await server.get("/rooms");
 
-    return data;
+    return data.rooms;
   }
 
   useEffect(() => {
-    const currentPlayer: Player =
-      player || JSON.parse(localStorage.getItem("player") || "{}");
+    getPlayer().then((player) => {
+      if (player) {
+        getRooms().then((rooms) => {
+          setRooms(rooms);
 
-    if (!currentPlayer.name) {
-      router.push("/");
-    }
-
-    updatePlayer(currentPlayer);
-  }, [player, router, updatePlayer]);
+          return;
+        });
+      }
+    });
+  }, [getPlayer]);
 
   useEffect(() => {
-    getRooms().then((rooms) => {
-      setRooms(rooms);
+    if (!router) return;
+
+    socket.on("room-created", (room) => {
+      if (!room || !room.id) return;
+
+      setItem("room", room);
+
+      router.push(`/room/${room.id}`);
+
+      return;
     });
+
+    socket.on("room-joined", (room) => {
+      if (!room || !room.id) return;
+
+      setItem("room", room);
+
+      router.push(`/room/${room.id}`);
+
+      return;
+    });
+
+    return () => {
+      socket.off("room-created");
+      socket.off("room-joined");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreateRoom = async () => {
-    if (!player.name) return;
-
-    const response = await server.post("/rooms/create");
-
-    if (response.status !== 201) {
-      return;
-    }
-
-    await router.push(`/room/${response.data.id}`);
+    if (!player || !player.name) return;
+    console.log("player -> ", player);
+    socket.emit("room-create", player);
   };
 
   const handleJoinRoom = async (roomId: string) => {
-    router.push(`/room/${roomId}`);
+    socket.emit("room-join", { roomId, player });
+
+    return;
   };
 
   return (

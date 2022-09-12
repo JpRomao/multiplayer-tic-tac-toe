@@ -5,43 +5,38 @@ import { useContext, useEffect, useState } from "react";
 
 import { PlayerContext } from "../contexts/PlayerContext";
 import server from "../services/server";
-import { Player } from "../types/player";
+import { useLocalStorage } from "../utils/useLocalStorage";
 
 const Home: NextPage = () => {
   const router = useRouter();
 
-  const { updatePlayer } = useContext(PlayerContext);
+  const { updatePlayer, getPlayer } = useContext(PlayerContext);
+  const { setItem } = useLocalStorage();
 
   const [name, setName] = useState("");
 
   useEffect(() => {
-    const currentPlayer: Player = JSON.parse(
-      localStorage.getItem("player") || "{}"
-    );
+    getPlayer().then((player) => {
+      if (player) {
+        router.push("/lobby");
 
-    if (!currentPlayer.name) {
-      return;
-    }
-
-    updatePlayer(currentPlayer);
-
-    if (currentPlayer) {
-      router.push("/lobby");
-    }
-  }, [router, updatePlayer]);
+        return;
+      }
+    });
+  }, [router, getPlayer]);
 
   const handleCreatePlayer = async () => {
-    const response = await server.post("/create/player", {
-      playerName: name,
+    const { data, status } = await server.post("/create/player", {
+      name,
     });
 
-    if (response.status !== 200) {
+    if (status !== 201) {
       return;
     }
 
-    localStorage.setItem("player", JSON.stringify(response.data));
+    setItem("player", data.player);
 
-    updatePlayer(response.data);
+    updatePlayer(data.player);
 
     router.push("/lobby");
   };
