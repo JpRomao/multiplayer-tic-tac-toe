@@ -18,6 +18,22 @@ class HardAi implements IAi {
     this.level = "hard";
     this.score = 0;
   }
+
+  getAiMove(board: Board, playerTurn?: 1 | 2): BoardAvailablePositions {
+    if (!playerTurn) {
+      return 0;
+    }
+
+    const availablePositions = board.getAvailablePositions();
+
+    if (availablePositions) {
+      return availablePositions[0];
+    }
+
+    return 0;
+  }
+
+  minimax(newBoard: Board, playerTurn: 1 | 2) {}
 }
 
 export { HardAi };

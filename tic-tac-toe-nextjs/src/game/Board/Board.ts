@@ -1,6 +1,6 @@
 import { BoardAvailablePositions, BoardValue, IBoard } from "./IBoard";
 
-class Board implements IBoard {
+class OffBoard implements IBoard {
   board: BoardValue[];
   isFull: boolean;
 
@@ -52,16 +52,7 @@ class Board implements IBoard {
     return 0;
   }
 
-  setBoardPosition(
-    position: BoardAvailablePositions | 10 | -10,
-    value: 1 | 2
-  ): void {
-    if (position === 10 || position === -10) {
-      return;
-    }
-
-    console.log("play", position, value);
-
+  setBoardPosition(position: BoardAvailablePositions, value: 1 | 2): void {
     this.board[position] = value;
   }
 
@@ -86,4 +77,4 @@ class Board implements IBoard {
   }
 }
 
-export default Board;
+export default OffBoard;

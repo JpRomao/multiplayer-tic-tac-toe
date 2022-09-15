@@ -1,5 +1,3 @@
-import { BoardAvailablePositions } from "./../../Board/IBoard";
-import Board from "../../Board/Board";
 import { IAi } from "../IAi";
 
 class BasicAi implements IAi {
@@ -17,14 +15,6 @@ class BasicAi implements IAi {
     this.playTurn = 2;
     this.score = 0;
     this.level = "easy";
-  }
-
-  getAiMove(board: Board): BoardAvailablePositions {
-    const availablePositions = board.getAvailablePositions();
-    const randomPosition =
-      availablePositions[Math.floor(Math.random() * availablePositions.length)];
-
-    return randomPosition;
   }
 }
 

@@ -236,7 +236,7 @@ class Game implements IGame {
       return {} as Room;
     }
 
-    if (!room.isRunning) {
+    if (!room.isRunning || !room.isAiActive) {
       console.error("Game is not running.");
 
       // throw new Error("Game is not running.");
@@ -285,22 +285,6 @@ class Game implements IGame {
     }
 
     room.turn++;
-
-    if (room.isAiActive) {
-      room.aiPlay();
-
-      if (winner) {
-        this.replaceRoom(room);
-
-        return room;
-      }
-
-      room.turn++;
-
-      this.replaceRoom(room);
-
-      return room;
-    }
 
     room.passTurn();
 

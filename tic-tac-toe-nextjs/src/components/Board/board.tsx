@@ -1,12 +1,12 @@
 import { Grid, GridItem } from "@chakra-ui/react";
 import { Socket } from "socket.io-client";
-import { Player } from "../../types/player";
-import { Room } from "../../types/room";
+import OffPlayer from "../../game/Player/Player";
+import OffRoom from "../../game/Room/Room";
 
 export const Board: React.FC<{
-  room: Room;
+  room: OffRoom;
   socket: Socket;
-  player: Player;
+  player: OffPlayer;
 }> = ({ room, socket, player }) => {
   const handleCellClick = (index: number) => {
     if (!player.id || !player.name || !room.id) {
@@ -23,6 +23,7 @@ export const Board: React.FC<{
   return (
     <Grid
       width={["100%", "100%", "100%", "75%", "75%", "50%"]}
+      minHeight="100%"
       templateRows="repeat(3, 1fr)"
       templateColumns="repeat(3, 1fr)"
     >

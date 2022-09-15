@@ -1,13 +1,12 @@
-import { BoardValue } from "../Board/IBoard";
+import { BoardAvailablePositions, BoardValue } from "../Board/IBoard";
 import Board from "../Board/Board";
-import { HardAi } from "../Ai/HardAi/HardAi";
-import { BasicAi } from "../Ai/BasicAi/BasicAi";
 import Player from "../Player/Player";
+import { Ai } from "../../types/ai";
 
 export interface RoomProps {
   playerTurn: BoardValue;
   turn: number;
-  board: BoardValue[] | null[];
+  board: BoardValue[];
   aiLevel: "easy" | "hard";
 }
 
@@ -16,26 +15,22 @@ export interface IRoom {
   name: string;
   players: {
     "1": Player;
-    "2": Player | BasicAi | HardAi;
+    "2": Player | Ai;
   };
   turn: number;
   isRunning: boolean;
   playerTurn: 1 | 2;
   board: Board;
   isAiActive: boolean;
-  ai: BasicAi | HardAi;
+  ai: Ai;
   winner: 0 | 1 | 2;
 
+  playerPlay(position: BoardAvailablePositions): BoardValue[];
+  aiPlay(): void;
+  changeAiLevel(): void;
   passTurn(): void;
   resetTurns(): void;
-  leaveRoom(playerId: string): void;
-  setPlayer(player: Player): Player | HardAi | BasicAi | void;
-  getPlayerById(playerId: string): {
-    player: Player | BasicAi | HardAi;
-    playerValue: 0 | 1 | 2;
-  };
   setGame(): RoomProps;
   stopGame(): void;
-  roomIsEmpty(): boolean;
   startGame(): void;
 }

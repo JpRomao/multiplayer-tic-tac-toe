@@ -5,10 +5,10 @@ import { useTranslations } from "next-intl";
 
 import server from "../services/server";
 import { useRouter } from "next/router";
-import { Room } from "../types/room";
 import { PlayerContext } from "../contexts/PlayerContext";
 import { useLocalStorage } from "../utils/useLocalStorage";
 import { socket } from "../services/socket";
+import OffRoom from "../game/Room/Room";
 
 const Lobby: NextPage = () => {
   const router = useRouter();
@@ -17,7 +17,7 @@ const Lobby: NextPage = () => {
 
   const { player, getPlayer } = useContext(PlayerContext);
 
-  const [rooms, setRooms] = useState<Room[]>([]);
+  const [rooms, setRooms] = useState<OffRoom[]>([]);
 
   const t = useTranslations();
 

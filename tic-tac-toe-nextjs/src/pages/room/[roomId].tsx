@@ -1,13 +1,14 @@
-import { Flex } from "@chakra-ui/react";
+import { Button, Flex } from "@chakra-ui/react";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Board } from "../../components/Board/board";
+import { RoomHeader } from "../../components/RoomHeader/RoomHeader";
 
 import { PlayerContext } from "../../contexts/PlayerContext";
+import OffRoom from "../../game/Room/Room";
 import server from "../../services/server";
 import { socket } from "../../services/socket";
-import { Room } from "../../types/room";
 import { useLocalStorage } from "../../utils/useLocalStorage";
 
 const Room: NextPage = () => {
@@ -16,7 +17,7 @@ const Room: NextPage = () => {
   const { player, getPlayer } = useContext(PlayerContext);
   const { setItem } = useLocalStorage();
 
-  const [room, setRoom] = useState<Room>({} as Room);
+  const [room, setRoom] = useState<OffRoom>({} as OffRoom);
 
   const getRoom = useCallback(async () => {
     const { roomId } = router.query;
@@ -31,10 +32,14 @@ const Room: NextPage = () => {
 
     getPlayer().then((player) => {
       if (player) {
-        getRoom().then((room: Room) => {
+        getRoom().then((room: OffRoom) => {
           setItem("room", room);
 
-          setRoom(room);
+          setRoom((room) => {
+            const newRoom = new OffRoom(room);
+
+            return newRoom;
+          });
 
           return;
         });
@@ -46,7 +51,11 @@ const Room: NextPage = () => {
   }, [router, getPlayer, getRoom, router.query.roomId]);
 
   useEffect(() => {
-    socket.on("played", (room: Room) => {
+    if (!room) return;
+    if (room.isAiActive) {
+      return;
+    }
+    socket.on("played", (room: OffRoom) => {
       if (!room || !room.id) {
         router.push("/lobby");
 
@@ -54,7 +63,6 @@ const Room: NextPage = () => {
       }
 
       setRoom(room);
-      console.log(room);
     });
 
     return () => {
@@ -64,8 +72,14 @@ const Room: NextPage = () => {
   }, []);
 
   return (
-    <Flex minWidth="100vw" minHeight="100vh">
-      <Board room={room} player={player} socket={socket} />
+    <Flex
+      flexDirection="column"
+      height="500px"
+      width="100%"
+      minWidth="100vw"
+      minHeight="100vh"
+    >
+      {room && <Board room={room} player={player} socket={socket} />}
     </Flex>
   );
 };

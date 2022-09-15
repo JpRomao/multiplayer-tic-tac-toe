@@ -4,6 +4,7 @@ import Room from "../Room/Room";
 
 export interface IGame {
   rooms: Room[];
+  players: Player[];
 
   findPlayerByPlayerId(playerId: string): Player | void;
   createRoom(player: Player): Room | void;

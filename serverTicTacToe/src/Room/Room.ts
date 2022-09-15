@@ -1,4 +1,3 @@
-import { BoardValue } from "../Board/IBoard";
 import Board from "../Board/Board";
 import Player from "../Player/Player";
 import { IRoom, RoomProps } from "./IRoom";
@@ -14,7 +13,7 @@ class Room implements IRoom {
   };
   turn: number;
   isRunning: boolean;
-  playerTurn: BoardValue;
+  playerTurn: 1 | 2;
   board: Board;
   isAiActive: boolean;
   ai: BasicAi | HardAi;
@@ -36,7 +35,7 @@ class Room implements IRoom {
     this.winner = 0;
   }
 
-  checkWinner() {
+  checkWinner(): 0 | 1 | 2 {
     const winner = this.board.checkWinner();
 
     this.winner = winner;
@@ -50,28 +49,14 @@ class Room implements IRoom {
     return winner;
   }
 
-  aiPlay(): void {
-    if (!this.isAiActive) {
-      return;
-    }
-
-    const aiMove = this.ai.getAiMove(this.board);
-
-    this.board.setBoardPosition(aiMove, 2);
-  }
-
-  changeAiLevel(): void {
-    this.ai = this.ai instanceof BasicAi ? new HardAi() : new BasicAi();
-  }
-
   startGame(): void {
-    if (this.players["1"] && this.players["2"]) {
+    if (this.players["1"].id && this.players["2"].id) {
       this.players["1"].playTurn = this.players["1"].playTurn === 1 ? 2 : 1;
 
       this.players["2"].playTurn = this.players["2"].playTurn === 1 ? 2 : 1;
 
       this.isRunning = true;
-    } else if (this.players["1"] && this.isAiActive) {
+    } else if (this.players["1"].id && this.isAiActive) {
       this.players["1"].playTurn = 1;
 
       this.isRunning = true;
@@ -130,8 +115,6 @@ class Room implements IRoom {
   }
 
   setPlayer(player: Player): Player | void {
-    console.log("setting player", player);
-
     if (this.players["1"].id === player.id) {
       console.log("player already in room");
 
@@ -156,10 +139,6 @@ class Room implements IRoom {
 
       return this.players["1"];
     } else if (this.players["1"].id === player.id) {
-      console.log(
-        `player name: ${player.name} - id: ${player.id} already in room`
-      );
-
       this.players["1"] = player;
 
       this.players["1"].playTurn = 1;
@@ -176,10 +155,6 @@ class Room implements IRoom {
 
       return this.players["2"];
     } else if (this.players["2"].id === player.id) {
-      console.log(
-        `player name: ${player.name} - id: ${player.id} already in room`
-      );
-
       this.players["2"] = player;
 
       this.players["2"].playTurn = 2;
@@ -200,21 +175,16 @@ class Room implements IRoom {
     playerValue: 0 | 1 | 2;
   } {
     if (this.players["1"].id === playerId) {
-      console.log("find player 1");
-
       return {
         player: this.players["1"],
         playerValue: 1,
       };
     } else if (this.players["2"].id === playerId) {
-      console.log("find player 2");
-
       return {
         player: this.players["2"],
         playerValue: 2,
       };
     } else {
-      console.log("player not found");
       return {
         player: {} as Player,
         playerValue: 0,

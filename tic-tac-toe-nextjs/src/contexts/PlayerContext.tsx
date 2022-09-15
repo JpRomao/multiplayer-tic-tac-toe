@@ -6,14 +6,14 @@ import {
   useMemo,
   useState,
 } from "react";
+import OffPlayer from "../game/Player/Player";
 import server from "../services/server";
-import { Player } from "../types/player";
 import { useLocalStorage } from "../utils/useLocalStorage";
 
 type PlayerContextType = {
-  player: Player;
-  updatePlayer: (player: Player) => void;
-  getPlayer: () => Promise<Player>;
+  player: OffPlayer;
+  updatePlayer: (player: OffPlayer) => void;
+  getPlayer: () => Promise<OffPlayer>;
 };
 
 interface PlayerContextProviderProps {
@@ -21,20 +21,20 @@ interface PlayerContextProviderProps {
 }
 
 export const PlayerContext = createContext<PlayerContextType>({
-  player: {} as Player,
-  updatePlayer: (player: Player) => {},
-  getPlayer: () => new Promise((resolve) => resolve({} as Player)),
+  player: {} as OffPlayer,
+  updatePlayer: (player: OffPlayer) => {},
+  getPlayer: () => new Promise((resolve) => resolve({} as OffPlayer)),
 });
 
 export const PlayerProvider = ({ children }: PlayerContextProviderProps) => {
-  const [player, setPlayer] = useState<Player>({} as Player);
+  const [player, setPlayer] = useState<OffPlayer>({} as OffPlayer);
 
   const { getItem, setItem } = useLocalStorage();
 
   const router = useRouter();
 
   const updatePlayer = useCallback(
-    (player: Player) => {
+    (player: OffPlayer) => {
       setItem("player", player);
       setPlayer(player);
     },
@@ -42,7 +42,7 @@ export const PlayerProvider = ({ children }: PlayerContextProviderProps) => {
   );
 
   const getPlayer = useCallback(async () => {
-    const currentPlayer: Player = getItem("player");
+    const currentPlayer: OffPlayer = getItem("player");
 
     if (!currentPlayer || !currentPlayer.id) {
       router.push("/");
@@ -59,7 +59,11 @@ export const PlayerProvider = ({ children }: PlayerContextProviderProps) => {
 
       return data.player;
     } catch (error: any) {
-      console.log(error.response.data.message || error.response.data.error);
+      console.log(
+        error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          console.error
+      );
     } finally {
       try {
         const { data } = await server.post("/create/player", currentPlayer);
@@ -68,7 +72,11 @@ export const PlayerProvider = ({ children }: PlayerContextProviderProps) => {
 
         updatePlayer(data.player);
       } catch (error: any) {
-        console.log(error.response.data.message || error.response.data.error);
+        console.log(
+          error?.response?.data?.message ||
+            error?.response?.data?.error ||
+            console.error
+        );
 
         router.push("/");
 
