@@ -1,25 +1,11 @@
 import { Grid, GridItem } from "@chakra-ui/react";
-import { Socket } from "socket.io-client";
-import OffPlayer from "../../game/Player/Player";
-import OffRoom from "../../game/Room/Room";
+
+import { BoardAvailablePositions, BoardValue } from "../../game/Board/IBoard";
 
 export const Board: React.FC<{
-  room: OffRoom;
-  socket: Socket;
-  player: OffPlayer;
-}> = ({ room, socket, player }) => {
-  const handleCellClick = (index: number) => {
-    if (!player.id || !player.name || !room.id) {
-      return;
-    }
-
-    socket.emit("play", {
-      playerId: player.id,
-      position: index,
-      roomId: room.id,
-    });
-  };
-
+  board: BoardValue[];
+  handleCellClick: (position: BoardAvailablePositions) => void;
+}> = ({ board, handleCellClick }) => {
   return (
     <Grid
       width={["100%", "100%", "100%", "75%", "75%", "50%"]}
@@ -27,16 +13,16 @@ export const Board: React.FC<{
       templateRows="repeat(3, 1fr)"
       templateColumns="repeat(3, 1fr)"
     >
-      {room.board.board.map((value, index) => {
+      {board.map((value, index) => {
         return (
           <GridItem
             display="flex"
-            key={index}
+            key={index as BoardAvailablePositions}
             border="1px solid black"
             justifyContent="center"
             alignItems="center"
             fontSize="9xl"
-            onClick={() => handleCellClick(index)}
+            onClick={() => handleCellClick(index as BoardAvailablePositions)}
             cursor="pointer"
           >
             {value === 1 ? "X" : value === 2 ? "O" : ""}

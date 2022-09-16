@@ -1,7 +1,8 @@
 import { BoardAvailablePositions, BoardValue } from "../Board/IBoard";
 import Board from "../Board/Board";
 import Player from "../Player/Player";
-import { Ai } from "../../types/ai";
+import { HardAi } from "../Ai/HardAi/HardAi";
+import { BasicAi } from "../Ai/BasicAi/BasicAi";
 
 export interface RoomProps {
   playerTurn: BoardValue;
@@ -15,15 +16,15 @@ export interface IRoom {
   name: string;
   players: {
     "1": Player;
-    "2": Player | Ai;
+    "2": Player | HardAi | BasicAi;
   };
   turn: number;
   isRunning: boolean;
   playerTurn: 1 | 2;
   board: Board;
   isAiActive: boolean;
-  ai: Ai;
-  winner: 0 | 1 | 2;
+  ai: HardAi | BasicAi;
+  winner: 0 | 1 | 2 | 3;
 
   playerPlay(position: BoardAvailablePositions): BoardValue[];
   aiPlay(): void;

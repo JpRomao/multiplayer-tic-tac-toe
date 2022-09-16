@@ -6,6 +6,7 @@ import { Board } from "../../components/Board/board";
 import { RoomHeader } from "../../components/RoomHeader/RoomHeader";
 
 import { PlayerContext } from "../../contexts/PlayerContext";
+import { BoardAvailablePositions } from "../../game/Board/IBoard";
 import OffRoom from "../../game/Room/Room";
 import server from "../../services/server";
 import { socket } from "../../services/socket";
@@ -17,7 +18,7 @@ const Room: NextPage = () => {
   const { player, getPlayer } = useContext(PlayerContext);
   const { setItem } = useLocalStorage();
 
-  const [room, setRoom] = useState<OffRoom>({} as OffRoom);
+  const [room, setRoom] = useState<OffRoom>();
 
   const getRoom = useCallback(async () => {
     const { roomId } = router.query;
@@ -28,18 +29,14 @@ const Room: NextPage = () => {
   }, [router.query]);
 
   useEffect(() => {
-    if (!router) return;
+    if (!router || !router.query.roomId) return;
 
     getPlayer().then((player) => {
       if (player) {
-        getRoom().then((room: OffRoom) => {
-          setItem("room", room);
+        getRoom().then((roomResponse: OffRoom) => {
+          setItem("room", new OffRoom(roomResponse));
 
-          setRoom((room) => {
-            const newRoom = new OffRoom(room);
-
-            return newRoom;
-          });
+          setRoom(new OffRoom(roomResponse));
 
           return;
         });
@@ -48,13 +45,15 @@ const Room: NextPage = () => {
       return;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router, getPlayer, getRoom, router.query.roomId]);
+  }, [getPlayer, getRoom, router.query.roomId]);
 
   useEffect(() => {
     if (!room) return;
+
     if (room.isAiActive) {
       return;
     }
+
     socket.on("played", (room: OffRoom) => {
       if (!room || !room.id) {
         router.push("/lobby");
@@ -71,6 +70,40 @@ const Room: NextPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleCellClick = useCallback(
+    (index: BoardAvailablePositions) => {
+      console.log("clicked");
+      if (!room || !player) return;
+
+      if (room.isAiActive) {
+        setRoom((room) => {
+          if (!room) return;
+
+          const newRoom = new OffRoom(room);
+
+          newRoom.playerPlay(index);
+
+          return newRoom;
+        });
+
+        return;
+      }
+
+      socket.emit("play", {
+        playerId: player.id,
+        position: index,
+        roomId: room.id,
+      });
+    },
+    [player, room]
+  );
+
+  const renderBoard = useCallback(() => {
+    if (!room) return <></>;
+
+    return <Board handleCellClick={handleCellClick} board={room.board.board} />;
+  }, [handleCellClick, room]);
+
   return (
     <Flex
       flexDirection="column"
@@ -79,7 +112,7 @@ const Room: NextPage = () => {
       minWidth="100vw"
       minHeight="100vh"
     >
-      {room && <Board room={room} player={player} socket={socket} />}
+      {renderBoard()}
     </Flex>
   );
 };

@@ -4,13 +4,15 @@ import Player from "../Player/Player";
 import { IRoom, RoomProps } from "./IRoom";
 import { BasicAi } from "../Ai/BasicAi/BasicAi";
 import { HardAi } from "../Ai/HardAi/HardAi";
+import OffBoard from "../Board/Board";
+import OffPlayer from "../Player/Player";
 
 class OffRoom implements IRoom {
   id: string;
   name: string;
   players: {
     "1": Player;
-    "2": Player | BasicAi | HardAi;
+    "2": Player;
   };
   turn: number;
   isRunning: boolean;
@@ -18,19 +20,30 @@ class OffRoom implements IRoom {
   board: Board;
   isAiActive: boolean;
   ai: BasicAi | HardAi;
-  winner: 0 | 1 | 2;
+  winner: 0 | 1 | 2 | 3;
 
   constructor(room: OffRoom) {
+    console.log("new Room", room);
     this.id = room.id;
     this.name = room.name;
-    this.players = room.players;
+    this.players = {
+      1: new OffPlayer(room.players[1]),
+      2: new OffPlayer(room.players[2]),
+    };
     this.turn = room.turn;
     this.isRunning = room.isRunning;
     this.playerTurn = room.playerTurn;
-    this.board = room.board;
+    this.board = new OffBoard(room.board);
     this.isAiActive = room.isAiActive;
-    this.ai = room.ai;
+    this.ai = new HardAi();
     this.winner = room.winner;
+
+    if (
+      this.ai.playTurn === this.playerTurn &&
+      this.board.getAvailablePositions().length === 9
+    ) {
+      this.aiPlay();
+    }
   }
 
   playerPlay(position: BoardAvailablePositions): BoardValue[] {
@@ -48,13 +61,23 @@ class OffRoom implements IRoom {
       this.turn += 1;
 
       this.aiPlay();
+
+      this.passTurn();
     }
 
     return this.board.board;
   }
 
-  checkWinner(): 0 | 1 | 2 {
+  checkWinner(): 0 | 1 | 2 | 3 {
     const winner = this.board.checkWinner();
+
+    if (winner === 3) {
+      this.winner = 3;
+
+      this.stopGame();
+
+      return winner;
+    }
 
     this.winner = winner;
 
@@ -73,8 +96,6 @@ class OffRoom implements IRoom {
     }
 
     const aiMove = this.ai.getAiMove(this.board);
-
-    this.turn++;
 
     this.board.setBoardPosition(aiMove, 2);
   }

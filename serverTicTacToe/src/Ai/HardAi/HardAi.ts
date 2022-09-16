@@ -11,7 +11,7 @@ class HardAi implements IAi {
   score: number;
 
   constructor() {
-    this.id = "1";
+    this.id = "AiSpecial";
     this.name = "HardAi";
     this.type = "ai";
     this.playTurn = 2;

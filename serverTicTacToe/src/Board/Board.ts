@@ -66,7 +66,7 @@ class Board implements IBoard {
   }
 
   checkIfBoardIsFull(): boolean {
-    const isFull = this.board.every((position) => position !== null);
+    const isFull = this.board.every((position) => position !== 0);
 
     this.isFull = isFull;
 

@@ -11,7 +11,7 @@ class BasicAi implements IAi {
   score: number;
 
   constructor() {
-    this.id = "1";
+    this.id = "AiSpecial";
     this.name = "BasicAi";
     this.type = "ai";
     this.playTurn = 2;

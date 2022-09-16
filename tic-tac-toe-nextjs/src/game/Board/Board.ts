@@ -4,9 +4,9 @@ class OffBoard implements IBoard {
   board: BoardValue[];
   isFull: boolean;
 
-  constructor() {
-    this.board = Array(9).fill(0);
-    this.isFull = false;
+  constructor(board: OffBoard) {
+    this.board = board.board || Array(9).fill(0);
+    this.isFull = board.isFull || false;
   }
 
   getBoard(): BoardValue[] {
@@ -25,7 +25,7 @@ class OffBoard implements IBoard {
     this.board = Array(9).fill(0);
   }
 
-  checkWinner(): 0 | 1 | 2 {
+  checkWinner(): 0 | 1 | 2 | 3 {
     const winningLines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -36,6 +36,10 @@ class OffBoard implements IBoard {
       [0, 4, 8],
       [2, 4, 6],
     ];
+
+    if (this.checkIfBoardIsFull()) {
+      return 3;
+    }
 
     for (let i = 0; i < winningLines.length; i++) {
       const [a, b, c] = winningLines[i];
@@ -53,11 +57,13 @@ class OffBoard implements IBoard {
   }
 
   setBoardPosition(position: BoardAvailablePositions, value: 1 | 2): void {
-    this.board[position] = value;
+    if (this.board[position] === 0) {
+      this.board[position] = value;
+    }
   }
 
   checkIfBoardIsFull(): boolean {
-    const isFull = this.board.every((position) => position !== null);
+    const isFull = this.board.every((position) => position !== 0);
 
     this.isFull = isFull;
 

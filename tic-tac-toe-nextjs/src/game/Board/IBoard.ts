@@ -9,5 +9,5 @@ export interface IBoard {
   isPositionAvailable(position: BoardAvailablePositions): boolean;
   checkIfBoardIsFull(): boolean;
   getAvailablePositions(): BoardAvailablePositions[] | null;
-  checkWinner(): 0 | 1 | 2;
+  checkWinner(): 0 | 1 | 2 | 3;
 }

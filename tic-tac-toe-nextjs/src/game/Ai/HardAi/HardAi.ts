@@ -11,7 +11,7 @@ class HardAi implements IAi {
   score: number;
 
   constructor() {
-    this.id = "1";
+    this.id = "AiSpecial";
     this.name = "HardAi";
     this.type = "ai";
     this.playTurn = 2;
@@ -19,21 +19,77 @@ class HardAi implements IAi {
     this.score = 0;
   }
 
-  getAiMove(board: Board, playerTurn?: 1 | 2): BoardAvailablePositions {
-    if (!playerTurn) {
+  getAiMove(board: Board): BoardAvailablePositions {
+    const move = this.bestMove(board);
+
+    return move;
+  }
+
+  bestMove(board: Board): BoardAvailablePositions {
+    let bestScore = -Infinity;
+    let move: BoardAvailablePositions = 0;
+
+    for (let i = 0; i < 9; i++) {
+      if (board.board[i] === 0) {
+        board.board[i] = this.playTurn;
+        let score = this.minimax(board, 0, false);
+        board.board[i] = 0;
+        console.log("score", score);
+        if (score > bestScore) {
+          bestScore = score;
+          move = i as BoardAvailablePositions;
+          console.log("bestScore", bestScore);
+          console.log("move", move);
+        }
+      }
+    }
+
+    return move;
+  }
+
+  minimax(newBoard: Board, depth: number, isMaximizing: boolean) {
+    const result = newBoard.checkWinner();
+
+    if (result === 1) {
+      return -10;
+    } else if (result === 2) {
+      return 10;
+    } else if (result === 3) {
       return 0;
     }
 
-    const availablePositions = board.getAvailablePositions();
+    if (isMaximizing) {
+      console.log("isMaximizing");
+      let bestScore = -Infinity;
 
-    if (availablePositions) {
-      return availablePositions[0];
+      for (let i = 0; i < 9; i++) {
+        if (newBoard.board[i] === 0) {
+          newBoard.board[i] = this.playTurn;
+          let score = this.minimax(newBoard, depth + 1, false);
+          console.log("max score", score);
+          newBoard.board[i] = 0;
+          bestScore = Math.max(score, bestScore);
+        }
+      }
+
+      return bestScore;
+    } else {
+      console.log("isMinimizing");
+      let bestScore = Infinity;
+
+      for (let i = 0; i < 9; i++) {
+        if (newBoard.board[i] === 0) {
+          newBoard.board[i] = this.playTurn === 1 ? 2 : 1;
+          let score = this.minimax(newBoard, depth + 1, true);
+          console.log("min score", score);
+          newBoard.board[i] = 0;
+          bestScore = Math.min(score, bestScore);
+        }
+      }
+
+      return bestScore;
     }
-
-    return 0;
   }
-
-  minimax(newBoard: Board, playerTurn: 1 | 2) {}
 }
 
 export { HardAi };
