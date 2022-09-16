@@ -25,7 +25,7 @@ class Board implements IBoard {
     this.board = Array(9).fill(0);
   }
 
-  checkWinner(): 0 | 1 | 2 {
+  checkWinner(): 0 | 1 | 2 | 3 {
     const winningLines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -36,6 +36,10 @@ class Board implements IBoard {
       [0, 4, 8],
       [2, 4, 6],
     ];
+
+    if (this.checkIfBoardIsFull()) {
+      return 3;
+    }
 
     for (let i = 0; i < winningLines.length; i++) {
       const [a, b, c] = winningLines[i];
@@ -52,17 +56,10 @@ class Board implements IBoard {
     return 0;
   }
 
-  setBoardPosition(
-    position: BoardAvailablePositions | 10 | -10,
-    value: 1 | 2
-  ): void {
-    if (position === 10 || position === -10) {
-      return;
+  setBoardPosition(position: BoardAvailablePositions, value: 1 | 2): void {
+    if (this.isPositionAvailable(position)) {
+      this.board[position] = value;
     }
-
-    console.log("play", position, value);
-
-    this.board[position] = value;
   }
 
   checkIfBoardIsFull(): boolean {

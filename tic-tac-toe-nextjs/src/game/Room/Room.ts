@@ -23,7 +23,6 @@ class OffRoom implements IRoom {
   winner: 0 | 1 | 2 | 3;
 
   constructor(room: OffRoom) {
-    console.log("new Room", room);
     this.id = room.id;
     this.name = room.name;
     this.players = {
@@ -106,7 +105,7 @@ class OffRoom implements IRoom {
 
   startGame(): void {
     if (this.players["1"].id && this.isAiActive) {
-      this.players["1"].playTurn = 1;
+      this.players["1"].playTurn = this.playerTurn;
 
       this.isRunning = true;
     } else {

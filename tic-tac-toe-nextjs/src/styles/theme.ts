@@ -24,7 +24,7 @@ export const theme = extendTheme({
       body: {
         bg: "gray.800",
         color: "gray.100",
-        fontSize: "1.13rem",
+        fontSize: "1.1rem",
       },
       a: {
         _hover: {

@@ -4,7 +4,7 @@ import Board from "../Board/Board";
 export interface IAi {
   id: string;
   name: string;
-  type: "ai";
+  type: "Ai";
   score: number;
   playTurn: 1 | 2;
   level: "easy" | "hard";

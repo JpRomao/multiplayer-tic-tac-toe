@@ -17,7 +17,8 @@ class Room implements IRoom {
   board: Board;
   isAiActive: boolean;
   ai: BasicAi | HardAi;
-  winner: 0 | 1 | 2;
+  winner: 0 | 1 | 2 | 3;
+  draws: number;
 
   constructor(id: string, name: string) {
     this.id = id;
@@ -33,12 +34,21 @@ class Room implements IRoom {
     this.isAiActive = true;
     this.ai = new BasicAi();
     this.winner = 0;
+    this.draws = 0;
   }
 
-  checkWinner(): 0 | 1 | 2 {
+  checkWinner(): 0 | 1 | 2 | 3 {
     const winner = this.board.checkWinner();
 
     this.winner = winner;
+
+    if (winner === 3) {
+      this.draws++;
+
+      this.stopGame();
+
+      return winner;
+    }
 
     if (winner) {
       this.players[winner].score += 1;

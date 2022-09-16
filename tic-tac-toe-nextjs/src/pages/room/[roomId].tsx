@@ -3,9 +3,12 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Board } from "../../components/Board/board";
+import { RoomActions } from "../../components/RoomActions/RoomActions";
 import { RoomHeader } from "../../components/RoomHeader/RoomHeader";
 
 import { PlayerContext } from "../../contexts/PlayerContext";
+import { BasicAi } from "../../game/Ai/BasicAi/BasicAi";
+import { HardAi } from "../../game/Ai/HardAi/HardAi";
 import { BoardAvailablePositions } from "../../game/Board/IBoard";
 import OffRoom from "../../game/Room/Room";
 import server from "../../services/server";
@@ -72,16 +75,23 @@ const Room: NextPage = () => {
 
   const handleCellClick = useCallback(
     (index: BoardAvailablePositions) => {
-      console.log("clicked");
       if (!room || !player) return;
 
-      if (room.isAiActive) {
+      if (room.isAiActive && room.isRunning) {
         setRoom((room) => {
           if (!room) return;
 
           const newRoom = new OffRoom(room);
 
           newRoom.playerPlay(index);
+
+          newRoom.winner = newRoom.board.checkWinner();
+
+          console.log("new room winner -> ", newRoom.winner);
+
+          if (newRoom.winner) {
+            newRoom.isRunning = false;
+          }
 
           return newRoom;
         });
@@ -101,18 +111,99 @@ const Room: NextPage = () => {
   const renderBoard = useCallback(() => {
     if (!room) return <></>;
 
-    return <Board handleCellClick={handleCellClick} board={room.board.board} />;
+    return (
+      <Board
+        handleCellClick={handleCellClick}
+        board={room.board.board}
+        isRunning={room.isRunning}
+      />
+    );
   }, [handleCellClick, room]);
+
+  const renderHeader = useCallback(() => {
+    if (!room) return <></>;
+
+    return (
+      <RoomHeader
+        players={room.players}
+        ai={room.ai}
+        isAiActive={room.isAiActive}
+      />
+    );
+  }, [room]);
+
+  const changeAiLevel = useCallback(() => {
+    if (!room) return;
+
+    if (!room.isAiActive) return;
+
+    setRoom((room) => {
+      if (!room) return;
+
+      const newRoom = new OffRoom(room);
+
+      newRoom.ai =
+        newRoom.ai.level === "easy"
+          ? (newRoom.ai = new HardAi())
+          : (newRoom.ai = new BasicAi());
+
+      return newRoom;
+    });
+  }, [room]);
+
+  const handleResetBoard = useCallback(() => {
+    if (!room) return;
+
+    if (room.isRunning) return;
+
+    if (room.board.getAvailablePositions().length >= 9) return;
+
+    if (!socket) return;
+
+    if (room.isAiActive) {
+      setRoom((room) => {
+        if (!room) return;
+
+        const newRoom = new OffRoom(room);
+
+        newRoom.board.resetBoard();
+
+        room.startGame();
+
+        return newRoom;
+      });
+
+      return;
+    }
+
+    socket.emit("reset-board");
+  }, [room]);
+
+  const renderButtons = useCallback(() => {
+    if (!room) return <></>;
+
+    return (
+      <RoomActions
+        changeAiLevel={changeAiLevel}
+        gameInitiated={room.board.getAvailablePositions().length < 9}
+        isRunning={room.isRunning}
+        socket={socket}
+        isAiActive={room.isAiActive}
+        handleResetBoard={handleResetBoard}
+      />
+    );
+  }, [room, changeAiLevel, handleResetBoard]);
 
   return (
     <Flex
       flexDirection="column"
-      height="500px"
       width="100%"
-      minWidth="100vw"
-      minHeight="100vh"
+      height="100vh"
+      alignItems="center"
     >
+      {renderHeader()}
       {renderBoard()}
+      {renderButtons()}
     </Flex>
   );
 };

@@ -1,33 +1,34 @@
 import { Flex, Text } from "@chakra-ui/react";
+
 import { BasicAi } from "../../game/Ai/BasicAi/BasicAi";
 import { HardAi } from "../../game/Ai/HardAi/HardAi";
 import OffPlayer from "../../game/Player/Player";
+import OffRoom from "../../game/Room/Room";
+import { PlayerScore } from "./PlayerScore";
 
 interface PlayerScoreboardProps {
   players: {
     1: OffPlayer;
     2: OffPlayer | HardAi | BasicAi;
   };
+  ai: OffRoom["ai"];
+  isAiActive: OffRoom["isAiActive"];
 }
 
 export const PlayerScoreboard: React.FC<PlayerScoreboardProps> = ({
   players,
+  ai,
+  isAiActive,
 }) => {
   return (
-    <Flex>
-      <Flex>
-        <Text>{players[1].type}</Text>
-        <Text>{players[1].name}</Text>
-        <Text color="yellow.500">{players[1].score}</Text>
-      </Flex>
+    <Flex justifyContent="space-around">
+      <PlayerScore player={players[1]} />
 
-      <Flex>
-        <Text>{players[2].type}</Text>
-        <Text>
-          {players[2].type === "human" ? players[2].name : players[2].level}
-        </Text>
-        <Text>{players[2].score}</Text>
-      </Flex>
+      {isAiActive ? (
+        <PlayerScore player={ai} />
+      ) : (
+        <PlayerScore player={players[2]} />
+      )}
     </Flex>
   );
 };

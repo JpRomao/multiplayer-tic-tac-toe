@@ -5,7 +5,7 @@ import { IAi } from "../IAi";
 class HardAi implements IAi {
   id: string;
   name: string;
-  type: "ai";
+  type: "Ai";
   playTurn: 1 | 2;
   level: "hard";
   score: number;
@@ -13,7 +13,7 @@ class HardAi implements IAi {
   constructor() {
     this.id = "AiSpecial";
     this.name = "HardAi";
-    this.type = "ai";
+    this.type = "Ai";
     this.playTurn = 2;
     this.level = "hard";
     this.score = 0;
@@ -34,12 +34,9 @@ class HardAi implements IAi {
         board.board[i] = this.playTurn;
         let score = this.minimax(board, 0, false);
         board.board[i] = 0;
-        console.log("score", score);
         if (score > bestScore) {
           bestScore = score;
           move = i as BoardAvailablePositions;
-          console.log("bestScore", bestScore);
-          console.log("move", move);
         }
       }
     }
@@ -59,14 +56,12 @@ class HardAi implements IAi {
     }
 
     if (isMaximizing) {
-      console.log("isMaximizing");
       let bestScore = -Infinity;
 
       for (let i = 0; i < 9; i++) {
         if (newBoard.board[i] === 0) {
           newBoard.board[i] = this.playTurn;
           let score = this.minimax(newBoard, depth + 1, false);
-          console.log("max score", score);
           newBoard.board[i] = 0;
           bestScore = Math.max(score, bestScore);
         }
@@ -74,14 +69,12 @@ class HardAi implements IAi {
 
       return bestScore;
     } else {
-      console.log("isMinimizing");
       let bestScore = Infinity;
 
       for (let i = 0; i < 9; i++) {
         if (newBoard.board[i] === 0) {
           newBoard.board[i] = this.playTurn === 1 ? 2 : 1;
           let score = this.minimax(newBoard, depth + 1, true);
-          console.log("min score", score);
           newBoard.board[i] = 0;
           bestScore = Math.min(score, bestScore);
         }

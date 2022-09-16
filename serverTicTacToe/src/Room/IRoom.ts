@@ -24,7 +24,8 @@ export interface IRoom {
   board: Board;
   isAiActive: boolean;
   ai: BasicAi | HardAi;
-  winner: 0 | 1 | 2;
+  winner: 0 | 1 | 2 | 3;
+  draws: number;
 
   passTurn(): void;
   resetTurns(): void;

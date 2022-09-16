@@ -5,14 +5,14 @@ class OffPlayer implements IPlayer {
   score: number;
   name: string;
   playTurn: 1 | 2;
-  type: "human";
+  type: "Human";
 
   constructor(player: OffPlayer) {
     this.id = player.id;
     this.name = player.name;
     this.score = player.score;
     this.playTurn = player.playTurn;
-    this.type = "human";
+    this.type = "Human";
   }
 
   getScore(): number {

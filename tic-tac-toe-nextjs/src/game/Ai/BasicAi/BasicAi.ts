@@ -5,7 +5,7 @@ import { IAi } from "../IAi";
 class BasicAi implements IAi {
   id: string;
   name: string;
-  type: "ai";
+  type: "Ai";
   playTurn: 1 | 2;
   level: "easy";
   score: number;
@@ -13,7 +13,7 @@ class BasicAi implements IAi {
   constructor() {
     this.id = "AiSpecial";
     this.name = "BasicAi";
-    this.type = "ai";
+    this.type = "Ai";
     this.playTurn = 2;
     this.score = 0;
     this.level = "easy";

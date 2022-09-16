@@ -1,4 +1,4 @@
-import { Button, Flex, Text } from "@chakra-ui/react";
+import { Flex, Text } from "@chakra-ui/react";
 import { GetStaticPropsContext, NextPage } from "next";
 import { useContext, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -9,11 +9,12 @@ import { PlayerContext } from "../contexts/PlayerContext";
 import { useLocalStorage } from "../utils/useLocalStorage";
 import { socket } from "../services/socket";
 import OffRoom from "../game/Room/Room";
+import { Button } from "../components/Button/Button";
 
 const Lobby: NextPage = () => {
   const router = useRouter();
 
-  const { getItem, setItem } = useLocalStorage();
+  const { setItem } = useLocalStorage();
 
   const { player, getPlayer } = useContext(PlayerContext);
 
@@ -71,7 +72,6 @@ const Lobby: NextPage = () => {
 
   const handleCreateRoom = async () => {
     if (!player || !player.name) return;
-    console.log("player -> ", player);
     socket.emit("room-create", player);
   };
 
@@ -95,7 +95,6 @@ const Lobby: NextPage = () => {
             <Text>Rooms</Text>
 
             <Button
-              bg="pink.600"
               onClick={() => {
                 getRooms().then((rooms) => {
                   setRooms(rooms);
@@ -105,9 +104,7 @@ const Lobby: NextPage = () => {
               reload
             </Button>
 
-            <Button bg="pink.600" onClick={handleCreateRoom}>
-              Criar sala
-            </Button>
+            <Button onClick={handleCreateRoom}>Criar sala</Button>
 
             <Flex>
               {rooms.map((room) => {
@@ -116,10 +113,7 @@ const Lobby: NextPage = () => {
                     <Text>{room.name}</Text>
 
                     <Flex>
-                      <Button
-                        bg="pink.600"
-                        onClick={() => handleJoinRoom(room.id)}
-                      >
+                      <Button onClick={() => handleJoinRoom(room.id)}>
                         Join
                       </Button>
                     </Flex>
