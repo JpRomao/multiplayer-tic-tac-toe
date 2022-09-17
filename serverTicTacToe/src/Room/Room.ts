@@ -32,7 +32,7 @@ class Room implements IRoom {
     this.playerTurn = 1;
     this.board = new Board();
     this.isAiActive = true;
-    this.ai = new BasicAi();
+    this.ai = new HardAi();
     this.winner = 0;
     this.draws = 0;
   }
@@ -61,9 +61,13 @@ class Room implements IRoom {
 
   startGame(): void {
     if (this.players["1"].id && this.players["2"].id) {
-      this.players["1"].playTurn = this.players["1"].playTurn === 1 ? 2 : 1;
-
-      this.players["2"].playTurn = this.players["2"].playTurn === 1 ? 2 : 1;
+      if (this.turn % 2 === 0) {
+        this.players["1"].playTurn = 2;
+        this.players["2"].playTurn = 1;
+      } else {
+        this.players["1"].playTurn = 1;
+        this.players["2"].playTurn = 2;
+      }
 
       this.isRunning = true;
     } else if (this.players["1"].id && this.isAiActive) {

@@ -7,7 +7,7 @@ class Player implements IPlayer {
   score: number;
   name: string;
   playTurn: 1 | 2;
-  type: "human";
+  type: "Human";
 
   constructor(name: string) {
     this.id = name ? this.generatePlayerId() : null;
@@ -15,7 +15,7 @@ class Player implements IPlayer {
     this.name = name;
     this.score = 0;
     this.playTurn = 1;
-    this.type = "human";
+    this.type = "Human";
   }
 
   generatePlayerId(): string {

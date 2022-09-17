@@ -5,7 +5,7 @@ export interface IPlayer {
   score: number;
   name: string;
   playTurn: BoardValue;
-  type: "human";
+  type: "Human";
 
   getScore(): number;
   addScore(): number;
