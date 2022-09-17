@@ -3,17 +3,22 @@ import { Flex, Heading } from "@chakra-ui/react";
 import OffRoom from "../../game/Room/Room";
 import { RoomCard } from "./RoomCard";
 
-export interface RoomCardProps {
+export interface LobbyRoomsContainerProps {
   name: OffRoom["name"];
   players: OffRoom["players"];
+  roomId: OffRoom["id"];
 }
 
-const LobbyRoomsContainer: React.FC<RoomCardProps> = ({ name, players }) => {
+const LobbyRoomsContainer: React.FC<LobbyRoomsContainerProps> = ({
+  name,
+  players,
+  roomId,
+}) => {
   return (
     <Flex>
       <Heading>Rooms</Heading>
 
-      <RoomCard name={name} players={players} />
+      <RoomCard roomId={roomId} name={name} players={players} />
     </Flex>
   );
 };

@@ -1,9 +1,14 @@
 import { Flex, Heading, Text } from "@chakra-ui/react";
 import { useCallback } from "react";
+import { Button } from "../Button/Button";
 
-import { RoomCardProps } from "./LobbyRoomsContainer";
+import { LobbyRoomsContainerProps } from "./LobbyRoomsContainer";
 
-const RoomCard: React.FC<RoomCardProps> = ({ name, players }) => {
+const RoomCard: React.FC<LobbyRoomsContainerProps> = ({
+  name,
+  players,
+  roomId,
+}) => {
   const playersCount = useCallback(() => {
     let count = 0;
 
@@ -13,11 +18,17 @@ const RoomCard: React.FC<RoomCardProps> = ({ name, players }) => {
     return count;
   }, [players]);
 
+  const handleJoinRoom = useCallback((roomId: string) => {
+    console.log("join room ", roomId);
+  }, []);
+
   return (
     <Flex>
       <Heading>{name}</Heading>
 
       <Text>{playersCount()}/2</Text>
+
+      <Button onClick={() => handleJoinRoom(roomId)}>Join</Button>
     </Flex>
   );
 };
