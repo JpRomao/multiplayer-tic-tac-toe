@@ -25,12 +25,12 @@ export interface IRoom {
   isAiActive: boolean;
   ai: HardAi | BasicAi;
   winner: 0 | 1 | 2 | 3;
+  draws: number;
 
   playerPlay(position: BoardAvailablePositions): BoardValue[];
   aiPlay(): void;
   changeAiLevel(): void;
   passTurn(): void;
-  resetTurns(): void;
   setGame(): RoomProps;
   stopGame(): void;
   startGame(): void;

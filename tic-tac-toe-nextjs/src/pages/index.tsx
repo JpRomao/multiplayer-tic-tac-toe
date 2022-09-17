@@ -1,4 +1,4 @@
-import { Button, Flex, Input } from "@chakra-ui/react";
+import { Button, Flex, Input, Text } from "@chakra-ui/react";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
@@ -42,10 +42,18 @@ const Home: NextPage = () => {
   };
 
   return (
-    <Flex direction="column" alignItems="center" width="100%">
+    <Flex
+      direction="column"
+      alignItems="center"
+      width="100%"
+      justifyContent="center"
+      height="100vh"
+    >
       <Flex direction="column" alignItems="center" maxW="700px" width="100%">
         <Flex alignItems="center" width="50%">
-          <label htmlFor="playerName">Nome: </label>
+          <Text as="label" htmlFor="playerName" me="2">
+            Nome:
+          </Text>
 
           <Input
             type="text"
@@ -64,6 +72,7 @@ const Home: NextPage = () => {
           bg="pink.700"
           onClick={handleCreatePlayer}
           width="25%"
+          mt="8"
         >
           Entrar
         </Button>

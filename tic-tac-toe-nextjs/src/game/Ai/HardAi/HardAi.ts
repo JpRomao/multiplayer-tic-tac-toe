@@ -10,13 +10,13 @@ class HardAi implements IAi {
   level: "hard";
   score: number;
 
-  constructor() {
+  constructor(ai?: HardAi) {
     this.id = "AiSpecial";
     this.name = "HardAi";
     this.type = "Ai";
-    this.playTurn = 2;
+    this.playTurn = ai?.playTurn || 2;
     this.level = "hard";
-    this.score = 0;
+    this.score = ai?.score || 0;
   }
 
   getAiMove(board: Board): BoardAvailablePositions {
@@ -28,14 +28,17 @@ class HardAi implements IAi {
   bestMove(board: Board): BoardAvailablePositions {
     let bestScore = -Infinity;
     let move: BoardAvailablePositions = 0;
-
     for (let i = 0; i < 9; i++) {
       if (board.board[i] === 0) {
         board.board[i] = this.playTurn;
+
         let score = this.minimax(board, 0, false);
+
         board.board[i] = 0;
+
         if (score > bestScore) {
           bestScore = score;
+
           move = i as BoardAvailablePositions;
         }
       }
@@ -47,10 +50,10 @@ class HardAi implements IAi {
   minimax(newBoard: Board, depth: number, isMaximizing: boolean) {
     const result = newBoard.checkWinner();
 
-    if (result === 1) {
-      return -10;
-    } else if (result === 2) {
+    if (result === this.playTurn) {
       return 10;
+    } else if (result === (this.playTurn === 1 ? 2 : 1)) {
+      return -10;
     } else if (result === 3) {
       return 0;
     }
@@ -61,8 +64,11 @@ class HardAi implements IAi {
       for (let i = 0; i < 9; i++) {
         if (newBoard.board[i] === 0) {
           newBoard.board[i] = this.playTurn;
+
           let score = this.minimax(newBoard, depth + 1, false);
+
           newBoard.board[i] = 0;
+
           bestScore = Math.max(score, bestScore);
         }
       }
@@ -74,8 +80,11 @@ class HardAi implements IAi {
       for (let i = 0; i < 9; i++) {
         if (newBoard.board[i] === 0) {
           newBoard.board[i] = this.playTurn === 1 ? 2 : 1;
+
           let score = this.minimax(newBoard, depth + 1, true);
+
           newBoard.board[i] = 0;
+
           bestScore = Math.min(score, bestScore);
         }
       }

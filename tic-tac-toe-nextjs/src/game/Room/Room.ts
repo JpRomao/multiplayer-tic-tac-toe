@@ -6,6 +6,7 @@ import { BasicAi } from "../Ai/BasicAi/BasicAi";
 import { HardAi } from "../Ai/HardAi/HardAi";
 import OffBoard from "../Board/Board";
 import OffPlayer from "../Player/Player";
+import { sleep } from "../../utils/sleep";
 
 class OffRoom implements IRoom {
   id: string;
@@ -21,6 +22,7 @@ class OffRoom implements IRoom {
   isAiActive: boolean;
   ai: BasicAi | HardAi;
   winner: 0 | 1 | 2 | 3;
+  draws: number;
 
   constructor(room: OffRoom) {
     this.id = room.id;
@@ -34,15 +36,10 @@ class OffRoom implements IRoom {
     this.playerTurn = room.playerTurn;
     this.board = new OffBoard(room.board);
     this.isAiActive = room.isAiActive;
-    this.ai = new HardAi();
+    this.ai =
+      room.ai.level === "easy" ? new BasicAi(room.ai) : new HardAi(room.ai);
     this.winner = room.winner;
-
-    if (
-      this.ai.playTurn === this.playerTurn &&
-      this.board.getAvailablePositions().length === 9
-    ) {
-      this.aiPlay();
-    }
+    this.draws = room.draws;
   }
 
   playerPlay(position: BoardAvailablePositions): BoardValue[] {
@@ -50,19 +47,13 @@ class OffRoom implements IRoom {
       return this.board.board;
     }
 
-    if (this.board.isPositionAvailable(position)) {
-      this.board.setBoardPosition(position, this.playerTurn);
-
-      this.checkWinner();
-
-      this.passTurn();
-
-      this.turn += 1;
-
-      this.aiPlay();
-
-      this.passTurn();
+    if (!this.board.isPositionAvailable(position)) {
+      return this.board.board;
     }
+
+    this.board.setBoardPosition(position, this.playerTurn);
+
+    this.passTurn();
 
     return this.board.board;
   }
@@ -73,6 +64,8 @@ class OffRoom implements IRoom {
     if (winner === 3) {
       this.winner = 3;
 
+      this.draws++;
+
       this.stopGame();
 
       return winner;
@@ -81,7 +74,11 @@ class OffRoom implements IRoom {
     this.winner = winner;
 
     if (winner) {
-      this.players[winner].score += 1;
+      if (this.players[winner].id) {
+        this.players[winner].score += 1;
+      } else {
+        this.ai.score += 1;
+      }
 
       this.stopGame();
     }
@@ -96,7 +93,7 @@ class OffRoom implements IRoom {
 
     const aiMove = this.ai.getAiMove(this.board);
 
-    this.board.setBoardPosition(aiMove, 2);
+    this.board.setBoardPosition(aiMove, this.ai.playTurn);
   }
 
   changeAiLevel(): void {
@@ -104,15 +101,15 @@ class OffRoom implements IRoom {
   }
 
   startGame(): void {
-    if (this.players["1"].id && this.isAiActive) {
-      this.players["1"].playTurn = this.playerTurn;
-
-      this.isRunning = true;
+    if (this.turn % 2 === 0) {
+      this.players["1"].playTurn = 2;
+      this.ai.playTurn = 1;
     } else {
-      console.log("not enough players");
-      return;
-      // throw new Error("Room is not full.");
+      this.players["1"].playTurn = 1;
+      this.ai.playTurn = 2;
     }
+
+    this.isRunning = true;
   }
 
   setGame(): RoomProps {
@@ -131,12 +128,8 @@ class OffRoom implements IRoom {
   }
 
   passTurn(): void {
+    this.turn++;
     this.playerTurn = this.playerTurn === 1 ? 2 : 1;
-  }
-
-  resetTurns(): void {
-    this.playerTurn = 1;
-    this.turn = 1;
   }
 }
 

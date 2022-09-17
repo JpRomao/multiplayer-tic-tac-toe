@@ -37,10 +37,6 @@ class OffBoard implements IBoard {
       [2, 4, 6],
     ];
 
-    if (this.checkIfBoardIsFull()) {
-      return 3;
-    }
-
     for (let i = 0; i < winningLines.length; i++) {
       const [a, b, c] = winningLines[i];
 
@@ -51,6 +47,10 @@ class OffBoard implements IBoard {
       ) {
         return this.board[a];
       }
+    }
+
+    if (this.getAvailablePositions().length === 0) {
+      return 3;
     }
 
     return 0;

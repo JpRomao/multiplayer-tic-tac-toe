@@ -91,36 +91,17 @@ const Lobby: NextPage = () => {
     >
       <Flex alignItems="center" justifyContent="center">
         <Flex direction="column">
-          <Flex direction="column">
+          <Flex direction="column" alignItems="center">
             <Text>Rooms</Text>
 
             <Button
-              onClick={() => {
-                getRooms().then((rooms) => {
-                  setRooms(rooms);
-                });
-              }}
+              fontSize={["md, lg, xl, 2xl"]}
+              py={["2", "2", "2", "2", "4"]}
+              mt="4"
+              onClick={handleCreateRoom}
             >
-              reload
+              Criar sala
             </Button>
-
-            <Button onClick={handleCreateRoom}>Criar sala</Button>
-
-            <Flex>
-              {rooms.map((room) => {
-                return (
-                  <Flex key={room.id} direction="column">
-                    <Text>{room.name}</Text>
-
-                    <Flex>
-                      <Button onClick={() => handleJoinRoom(room.id)}>
-                        Join
-                      </Button>
-                    </Flex>
-                  </Flex>
-                );
-              })}
-            </Flex>
           </Flex>
         </Flex>
       </Flex>

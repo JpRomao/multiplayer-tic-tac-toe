@@ -78,23 +78,31 @@ const Room: NextPage = () => {
       if (!room || !player) return;
 
       if (room.isAiActive && room.isRunning) {
-        setRoom((room) => {
-          if (!room) return;
+        const newRoom = new OffRoom(room);
 
-          const newRoom = new OffRoom(room);
+        newRoom.playerPlay(index);
 
-          newRoom.playerPlay(index);
+        newRoom.winner = newRoom.checkWinner();
 
-          newRoom.winner = newRoom.board.checkWinner();
+        if (newRoom.winner) {
+          newRoom.isRunning = false;
 
-          console.log("new room winner -> ", newRoom.winner);
+          setRoom(newRoom);
 
-          if (newRoom.winner) {
-            newRoom.isRunning = false;
-          }
+          return;
+        }
 
-          return newRoom;
-        });
+        newRoom.aiPlay();
+
+        newRoom.passTurn();
+
+        newRoom.winner = newRoom.checkWinner();
+
+        if (newRoom.winner) {
+          newRoom.isRunning = false;
+        }
+
+        setRoom(newRoom);
 
         return;
       }
@@ -128,6 +136,7 @@ const Room: NextPage = () => {
         players={room.players}
         ai={room.ai}
         isAiActive={room.isAiActive}
+        draws={room.draws}
       />
     );
   }, [room]);
@@ -161,17 +170,13 @@ const Room: NextPage = () => {
     if (!socket) return;
 
     if (room.isAiActive) {
-      setRoom((room) => {
-        if (!room) return;
+      const newRoom = new OffRoom(room);
 
-        const newRoom = new OffRoom(room);
+      newRoom.board.resetBoard();
 
-        newRoom.board.resetBoard();
+      newRoom.startGame();
 
-        room.startGame();
-
-        return newRoom;
-      });
+      setRoom(newRoom);
 
       return;
     }

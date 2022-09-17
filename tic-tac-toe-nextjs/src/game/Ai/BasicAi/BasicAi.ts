@@ -1,3 +1,4 @@
+import { sleep } from "./../../../utils/sleep";
 import { BoardAvailablePositions } from "./../../Board/IBoard";
 import Board from "../../Board/Board";
 import { IAi } from "../IAi";
@@ -10,12 +11,12 @@ class BasicAi implements IAi {
   level: "easy";
   score: number;
 
-  constructor() {
+  constructor(ai?: BasicAi) {
     this.id = "AiSpecial";
     this.name = "BasicAi";
     this.type = "Ai";
-    this.playTurn = 2;
-    this.score = 0;
+    this.playTurn = ai?.playTurn || 2;
+    this.score = ai?.score || 0;
     this.level = "easy";
   }
 
